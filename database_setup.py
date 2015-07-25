@@ -1,20 +1,20 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, create_engine
+from sqlalchemy.ext.declarative import declarative_base
 
 __author__ = 'Zackarias Gustavsson'
 
+base = declarative_base()
 
-class Users():
+
+class Users(base):
     __tablename__ = 'users'
 
     id = Column(Integer, primary_key=True)
     name = Column(String(80), nullable=False)
     email = Column(String(250), nullable=False)
 
-    def __init__(self):
-        pass
 
-
-class Music():
+class Music(base):
     __tablename__ = 'music'
 
     id = Column(Integer, primary_key=True)
@@ -24,5 +24,7 @@ class Music():
     album_name = Column(String, nullable=False)
     album_cover = Column(String, nullable=False)
 
-    def __init__(self):
-        pass
+
+engine = create_engine('sqlite:///test.db')
+
+base.metadata.create_all(engine)

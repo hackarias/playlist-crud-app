@@ -123,4 +123,5 @@ pip-selfcheck.json
 ### Vagrant template
 .vagrant/
 
-
+### Stuff
+.db

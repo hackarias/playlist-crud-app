@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Show users</title>
+</head>
+<body>
+<button><a href="{{ url_for('create_user') }}">Create user</a></button>
+    {% for user in users %}
+        <p><strong>{{ user.name }}</strong></p>
+        <p>{{ user.email }}</p>
+        <br>
+    {% endfor %}
+
+</body>
+</html>
