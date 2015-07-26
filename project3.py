@@ -1,4 +1,4 @@
-from flask import Flask, request, url_for, render_template, flash
+from flask import Flask, request, url_for, render_template, flash, redirect
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import asc, create_engine
 
@@ -46,7 +46,7 @@ def create_user():
         flash('The user {} was successfully created'.format(
             user_to_create.name))
         session.commit()
-        return render_template(url_for('home'))
+        return redirect(url_for('home'))
     else:
         return render_template('create-user.html')
 
