@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+    <div class="container">
+        <div class="menu">
+            <a href="{{ url_for('edit_user', user_id=user_id) }}">Edit</a>
+            <a href="{{ url_for('delete_user', user_id=user_id) }}">Delete user</a>
+        </div>
+        <div class="user-info">
+
+            <h1>Profile for user {{ users.name }}</h1>
+            <p>Some info!</p>
+            <br>
+            <ul>
+                {% for user in users %}
+                    <li><strong>Name: </strong>{{ user.name }}</li>
+                    <li><strong>Email: </strong>{{ user.email }}</li>
+                    <li><strong>ID: </strong>{{ user.id }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+    </div>
+</body>
+</html>

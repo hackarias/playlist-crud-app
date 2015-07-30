@@ -9,6 +9,7 @@
     {% for user in users %}
         <p><strong>{{ user.name }}</strong></p>
         <p>{{ user.email }}</p>
+        <a href="{{ url_for('show_user', user_id=user.id) }}">Profile</a>
         <br>
     {% endfor %}
 
