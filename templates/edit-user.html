@@ -1,10 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title></title>
-</head>
-<body>
+{% extends 'layout.html' %}
+{% block title %}
+    Edit user
+{% endblock %}
+{% block head %}
+
+{% endblock %}
+{% block body %}
     <div class="container">
         <form action="#" method="post">
             <input type="text" placeholder="{{ user_to_edit.name }}" name="name">
@@ -14,5 +15,5 @@
             <input type="submit" value="Submit">
         </form>
     </div>
-</body>
-</html>
+
+{% endblock %}

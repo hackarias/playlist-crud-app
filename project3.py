@@ -1,4 +1,5 @@
-from flask import Flask, request, url_for, render_template, flash, redirect
+from flask import Flask, request, url_for, render_template, flash, redirect, \
+    flash
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import asc, create_engine
 
@@ -15,12 +16,6 @@ db_session = sessionmaker(bind=engine)
 session = db_session()
 
 
-@app.route('/')
-def home():
-    users = session.query(Users).order_by(asc(Users.name))
-    return render_template('home.html', users=users)
-
-
 @app.route('/login/')
 def login():
     return "This will be the login page"
@@ -29,6 +24,13 @@ def login():
 @app.route('/disconnect/')
 def disconnect():
     return "This page will be the logout page"
+
+
+@app.route('/')
+@app.route('/users/')
+def home():
+    users = session.query(Users).order_by(asc(Users.name))
+    return render_template('home.html', users=users)
 
 
 @app.route('/user/<int:user_id>/')
@@ -43,9 +45,9 @@ def create_user():
         user_to_create = Users(name=request.form['name'],
                                email=request.form['email'])
         session.add(user_to_create)
-        flash('The user {} was successfully created'.format(
-            user_to_create.name))
         session.commit()
+        flash(
+            'The user {} was successfully created'.format(user_to_create.name))
         return redirect(url_for('home'))
     else:
         return render_template('create-user.html')
@@ -61,6 +63,7 @@ def edit_user(user_id):
             user_to_edit.email = request.form['email']
         session.add(user_to_edit)
         session.commit()
+        flash('User {} updated successfully'.format(user_to_edit.name))
         return redirect(url_for('show_user', user_id=user_id))
     else:
         return render_template('edit-user.html', user_id=user_id,
@@ -73,6 +76,7 @@ def delete_user(user_id):
     if request.method == 'POST':
         session.delete(user_to_delete)
         session.commit()
+        flash('User {} was deleted successfully'.format(user_to_delete.name))
         return redirect(url_for('home'))
     else:
         return render_template('delete-user.html', deleted=user_to_delete)
