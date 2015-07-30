@@ -42,7 +42,6 @@ def create_user():
     if request.method == 'POST':
         user_to_create = Users(name=request.form['name'],
                                email=request.form['email'])
-
         session.add(user_to_create)
         flash('The user {} was successfully created'.format(
             user_to_create.name))
@@ -58,10 +57,8 @@ def edit_user(user_id):
     if request.method == 'POST':
         if request.form['name']:
             user_to_edit.name = request.form['name']
-
         if request.form['email']:
             user_to_edit.email = request.form['email']
-
         session.add(user_to_edit)
         session.commit()
         return redirect(url_for('show_user', user_id=user_id))
