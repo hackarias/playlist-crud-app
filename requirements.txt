@@ -1,2 +1,6 @@
-flask
+oauth2client
+httplib2
 sqlalchemy
+werkzeug==0.8.3
+flask==0.9
+Flask-Login==0.1.3
