@@ -4,14 +4,14 @@
         {% block head %}
             <meta charset="UTF-8">
             <title>{% block title %} - Project 3 {% endblock %}</title>
-
+            <link rel="stylesheet" href="/static/styles.css" type="text/css">
         {% endblock %}
     </head>
 <body>
 
     <div class="content">
         {% block body %}
-
+            <div id="signed-in">Signed in user will be displayed here</div>
         {% endblock %}
     </div>
 </body>

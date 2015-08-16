@@ -8,3 +8,6 @@
 	list-style-type: none;
 	text-align: center;
 }
+#signed-in{
+    float: right;
+}
