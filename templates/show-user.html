@@ -10,6 +10,7 @@
         <div class="menu">
             <a href="{{ url_for('edit_user', user_id=user_id) }}">Edit</a>
             <a href="{{ url_for('delete_user', user_id=user_id) }}">Delete user</a>
+            <a href="{{ url_for('create_playlist', user_id=user_id)}}">Create Playlist</a>
         </div>
         <div class="user-info">
 
@@ -21,6 +22,11 @@
                     <li><strong>Name: </strong>{{ user.name }}</li>
                     <li><strong>Email: </strong>{{ user.email }}</li>
                     <li><strong>ID: </strong>{{ user.id }}</li>
+
+                    {% for playlists in playlist %}
+                        <li><strong>Playlist:</strong>{{ playlist.name }}</li>
+                    {% endfor %}
+
                 {% endfor %}
             </ul>
         </div>

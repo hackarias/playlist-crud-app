@@ -1,0 +1,20 @@
+{% extends 'layout.html' %}
+{% block title %}
+    Create Playlist {{ super() }}
+{% endblock %}
+{% block head %}
+    {{ super() }}
+{% endblock %}
+
+{% block body %}
+    {{ super() }}
+    <div class="container">
+        <h1>Create a playlist!</h1>
+        <form action="#">
+            <input type="text" placeholder="Name" name="name">
+            <input type="text" placeholder="Description" name="description">
+            <input type="submit" value="Create">
+
+        </form>
+    </div>
+{% endblock %}

@@ -207,13 +207,47 @@ def create_user(login_session):
     return user.id
 
 
-def create_playlist():
-    new_playlist = Playlist(name=request.form['name'],
-                            description=request.form['description'],
-                            user_id=User.id)
-    session.add(new_playlist)
-    session.commit()
-    return redirect(url_for('show_user'))
+@app.route('/playlist/')
+def show_playlists():
+    playlist = session.query(Playlist).order_by(asc(Playlist.name))
+    return render_template('', playlist=playlist)
+
+
+@app.route('/playlist/<int:user_id>/create/')
+def create_playlist(user_id):
+    """
+    Creates a playlist for the user.
+
+    :return: redirect to the users profile
+    """
+    if 'username' not in login_session:
+        return redirect('login')
+    user = session.query(User).filter_by(id=user_id).one()
+    # if login_session['user_id'] != user.id:
+    #     return "<script> function myFunction() {alert('You are not " \
+    #            "authorized to add playlists to this user.')};" \
+    #            " </script><body onload='myFunction()''>"
+    if request == 'POST':
+        new_playlist = Playlist(name=request.form['name'],
+                                description=request.form['description'],
+                                user_id=user.id)
+        session.add(new_playlist)
+        session.commit()
+        flash('New playlist {0} has been added to {1}').format(
+            new_playlist.name, user_id.name)
+        return redirect(url_for('show_user'), user_id=user_id)
+    else:
+        return render_template('create-playlist.html', user_id=user_id)
+
+
+@app.route('/user/<int:user_id>/playlist/<int:playlist_id>/')
+def show_playlist(user_id, playlist_id):
+    """
+    Displays the playlist with ID <playlist_id>.
+
+    """
+    playlist = session.query(Playlist).filter_by(id=Playlist.id).one()
+    return render_template('show-user.html', playlist_id=playlist)
 
 
 @app.route('/user/<int:user_id>/edit/', methods=['GET', 'POST'])

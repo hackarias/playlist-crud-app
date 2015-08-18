@@ -1,0 +1,19 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+  Show Playlists {{super()}}
+{% endblock %}
+
+{% block header %}
+  {{super()}}
+{% endblock %}
+
+{% block body %}
+  <h1>Show Playlists</h1>
+    {% for playlist in playlists %}
+        <li><strong>Name: </strong>{{ playlist.name }}</li>
+        <li><strong>Created by: </strong>{{ playlist.user_id }}</li>
+        <li><strong>Description</strong>{{ playlist.description }}</li>
+    {% endfor %}
+
+{% endblock %}
