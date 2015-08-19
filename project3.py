@@ -210,7 +210,7 @@ def create_user(login_session):
 @app.route('/playlist/')
 def show_playlists():
     playlist = session.query(Playlist).order_by(asc(Playlist.name))
-    return render_template('', playlist=playlist)
+    return render_template('show_playlist.html', playlist=playlist)
 
 
 @app.route('/playlist/<int:user_id>/create/')
