@@ -10,11 +10,11 @@
     {{ super() }}
     <div class="container">
         <h1>Create a playlist!</h1>
-        <form action="#">
+        <form method="post">
             <input type="text" placeholder="Name" name="name">
             <input type="text" placeholder="Description" name="description">
-            <input type="submit" value="Create">
-
+            <button type="submit">Submit</button>
         </form>
+        <a href="{{ url_for('home') }}">Cancel</a>
     </div>
 {% endblock %}

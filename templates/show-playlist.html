@@ -1,0 +1,24 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+    {{ playlist.name }} {{ super() }}
+{% endblock %}
+
+{% block head %}
+    {{ super() }}
+{% endblock %}
+
+{% block body %}
+    {{ super() }}
+    <div class="container">
+        <li>
+            <strong> Name: </strong>
+            {{ playlist.name }}
+        </li>
+        <li>
+            <strong> Description </strong>
+            {{ playlist.description }}
+        </li>
+
+    </div>
+{% endblock %}

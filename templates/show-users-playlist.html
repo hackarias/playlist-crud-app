@@ -1,0 +1,19 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+    Playlists {{ super() }}
+{% endblock %}
+
+{% block head %}
+    {{ super() }}
+{% endblock %}
+
+{% block body %}
+    {{ super() }}
+    <div class="container">
+        {% for playlist in playlists %}
+            {{ playlist.name }}
+        {% endfor %}
+
+    </div>
+{% endblock %}

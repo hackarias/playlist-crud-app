@@ -9,6 +9,7 @@ class User(base):
     __tablename__ = 'user'
 
     id = Column(Integer, primary_key=True)
+    username = Column(String(25))
     name = Column(String(80), nullable=False)
     email = Column(String(250), nullable=False)
     picture = Column(String)
@@ -31,8 +32,8 @@ class Song(base):
     song_name = Column(String(80), nullable=False)
     song_uri = Column(String)
     artist = Column(String, nullable=False)
-    album_name = Column(String, nullable=False)
-    album_cover = Column(String, nullable=False)
+    album_name = Column(String)
+    album_cover = Column(String)
     playlist_id = Column(Integer, ForeignKey('playlist.id'))
     playlist_relationship = relationship(Playlist)
     user_id = Column(Integer, ForeignKey('user.id'))

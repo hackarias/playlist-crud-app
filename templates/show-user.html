@@ -1,10 +1,14 @@
 {% extends 'layout.html' %}
-{% block title %} Show user {% endblock %}
-{% block head %}
-
+{% block title %}
+    Show user {{ super() }}
 {% endblock %}
-    {% block body %}
 
+{% block head %}
+    {{ super() }}
+{% endblock %}
+
+{% block body %}
+    {{ super() }}
     <div class="container">
 
         <div class="menu">
@@ -12,6 +16,7 @@
             <a href="{{ url_for('delete_user', user_id=user_id) }}">Delete user</a>
             <a href="{{ url_for('create_playlist', user_id=user_id)}}">Create Playlist</a>
         </div>
+
         <div class="user-info">
 
             <h1>Profile for user {{ users.name }}</h1>
@@ -22,10 +27,12 @@
                     <li><strong>Name: </strong>{{ user.name }}</li>
                     <li><strong>Email: </strong>{{ user.email }}</li>
                     <li><strong>ID: </strong>{{ user.id }}</li>
+                    <li> <Strong>Playlists: </Strong>
+                        {% for playlist in playlists %}
+                                <a href="{{ url_for('show_playlist', playlist_id=playlist.id) }}">{{playlist.name}} </a><br>
+                        {% endfor %}
 
-                    {% for playlists in playlist %}
-                        <li><strong>Playlist:</strong>{{ playlist.name }}</li>
-                    {% endfor %}
+                    </li>
 
                 {% endfor %}
             </ul>

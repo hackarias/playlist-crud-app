@@ -1,7 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
+from io import open
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
-from database_setup import User, base, Playlist
+from database_setup import User, base, Playlist, Song
 from flask import session as login_session
 import random
 import string
@@ -158,7 +159,6 @@ def g_disconnect():
         response = make_response(json.dumps('Successfully disconnected.'), 200)
         response.headers['Content-Type'] = 'application/json'
         return response
-
     else:
         # For whatever reason, the given token was invalid.
         response = make_response(
@@ -173,15 +173,23 @@ def home():
     """ Renders the home template and passes on a list of all users and their
      names
     """
-
     users = session.query(User).order_by(asc(User.name))
     return render_template('home.html', users=users)
 
 
 @app.route('/user/<int:user_id>/')
 def show_user(user_id):
+    """
+    Information about the user.
+    :param user_id: ID of the user.
+    :return:
+    """
     users = session.query(User).filter_by(id=user_id)
-    return render_template('show-user.html', user_id=user_id, users=users)
+    playlist = session.query(Playlist).order_by(asc(Playlist.name))
+    return render_template('show-user.html',
+                           user_id=user_id,
+                           users=users,
+                           playlists=playlist)
 
 
 def get_user_id(email):
@@ -207,47 +215,53 @@ def create_user(login_session):
     return user.id
 
 
-@app.route('/playlist/')
-def show_playlists():
-    playlist = session.query(Playlist).order_by(asc(Playlist.name))
-    return render_template('show_playlist.html', playlist=playlist)
-
-
-@app.route('/playlist/<int:user_id>/create/')
-def create_playlist(user_id):
+@app.route('/playlist/create/', methods=['GET', 'POST'])
+def create_playlist():
     """
     Creates a playlist for the user.
 
     :return: redirect to the users profile
     """
     if 'username' not in login_session:
-        return redirect('login')
-    user = session.query(User).filter_by(id=user_id).one()
+        return redirect('/login')
     # if login_session['user_id'] != user.id:
     #     return "<script> function myFunction() {alert('You are not " \
     #            "authorized to add playlists to this user.')};" \
     #            " </script><body onload='myFunction()''>"
     if request == 'POST':
         new_playlist = Playlist(name=request.form['name'],
-                                description=request.form['description'],
-                                user_id=user.id)
+                                description=request.form['description'])
         session.add(new_playlist)
         session.commit()
-        flash('New playlist {0} has been added to {1}').format(
-            new_playlist.name, user_id.name)
-        return redirect(url_for('show_user'), user_id=user_id)
+        return redirect(url_for('home'))
     else:
-        return render_template('create-playlist.html', user_id=user_id)
+        return render_template('create-playlist.html')
 
 
-@app.route('/user/<int:user_id>/playlist/<int:playlist_id>/')
-def show_playlist(user_id, playlist_id):
+@app.route('/playlists/<int:user_id>/')
+def show_playlists(user_id):
     """
-    Displays the playlist with ID <playlist_id>.
-
+    Stores all playlists for user with ID user_id.
+    :param user_id: ID of the user.
+    :return:
     """
-    playlist = session.query(Playlist).filter_by(id=Playlist.id).one()
-    return render_template('show-user.html', playlist_id=playlist)
+    user = session.query(User).filter_by(id=user_id).one()
+    playlists = session.query(Playlist).order_by(asc(user_id=user))
+    return render_template('show-playlists.html', user_id=user,
+                           playlists=playlists)
+
+
+@app.route('/playlist/<int:playlist_id>/')
+def show_playlist(playlist_id):
+    """
+    Stores all playlists for user <user_id>.
+
+    :param playlist_id: ID of the user.
+    """
+    playlist = session.query(Playlist).filter_by(id=playlist_id).one()
+    songs = session.query(Song).filter_by(playlist_id=playlist_id).all()
+    return render_template('show-playlist.html', playlist=playlist,
+                           songs=songs)
 
 
 @app.route('/user/<int:user_id>/edit/', methods=['GET', 'POST'])

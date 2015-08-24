@@ -9,8 +9,6 @@
 {% block body %}
     {{ super() }}
 
-    <button><a href="{{ url_for('login') }}">Log In</a></button>
-    <button><a href="{{ url_for('g_disconnect') }}">Disconnect</a></button>
     {% for user in users %}
         <p><strong>{{ user.name }}</strong></p>
         <p>{{ user.email }}</p>

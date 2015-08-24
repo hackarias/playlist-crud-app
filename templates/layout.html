@@ -11,7 +11,15 @@
 
     <div class="content">
         {% block body %}
-            <div id="signed-in">Signed in user will be displayed here</div>
+            <div id="signed-in">
+
+                {% if 'username' not in session %}
+                    <a href="{{ url_for('login') }}">Click here to log in</a>
+                {% else %}
+                    <a href="{{ url_for('g_disconnect') }}">Logout</a>
+                {% endif %}
+
+            </div>
         {% endblock %}
     </div>
 </body>
