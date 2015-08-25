@@ -228,12 +228,13 @@ def create_playlist():
     #     return "<script> function myFunction() {alert('You are not " \
     #            "authorized to add playlists to this user.')};" \
     #            " </script><body onload='myFunction()''>"
-    if request == 'POST':
+    if request.method == 'POST':
         new_playlist = Playlist(name=request.form['name'],
-                                description=request.form['description'])
+                                description=request.form['description'],
+                                user_id=login_session['user_id'])
         session.add(new_playlist)
         session.commit()
-        return redirect(url_for('home'))
+        return redirect(url_for('show_playlist', playlist_id=Playlist.id))
     else:
         return render_template('create-playlist.html')
 
@@ -241,7 +242,7 @@ def create_playlist():
 @app.route('/playlists/<int:user_id>/')
 def show_playlists(user_id):
     """
-    Stores all playlists for user with ID user_id.
+    Stores all playlist for user with ID user_id.
     :param user_id: ID of the user.
     :return:
     """
