@@ -259,15 +259,18 @@ def delete_playlist(playlist_id):
     :param playlist_id: ID of the playlist being deleted.
     :return:
     """
-    playlist_to_delete = session.query(Playlist).filter_by(id=playlist_id).one()
+    playlist = session.query(Playlist).filter_by(id=playlist_id).one()
+    playlist_to_delete = session.query(Playlist).filter_by(
+        id=playlist_id).one()
     if request.method == 'POST':
         session.delete(playlist_to_delete)
+        flash("Playlist %s was deleted.") % playlist_to_delete.name
         session.commit()
-        return redirect(url_for('home'))
+        return redirect(url_for('show_user', user_id=login_session['user_id']))
     else:
-        return render_template('delete_playlist.html',
-                               user_id=playlist_id,
-                               playlist=playlist_to_delete)
+        return render_template('delete-playlist.html',
+                               playlist=playlist,
+                               playlist_to_delete=playlist_to_delete)
 
 
 @app.route('/playlist/<int:playlist_id>/')
@@ -277,9 +280,11 @@ def show_playlist(playlist_id):
 
     :param playlist_id: ID of the user.
     """
+    creator = session.query(User).filter_by(id=Playlist.user_id).one()
     playlist = session.query(Playlist).filter_by(id=playlist_id).one()
     songs = session.query(Song).filter_by(user_id=playlist.user_id).all()
     return render_template('show-playlist.html',
+                           creator=creator,
                            playlist=playlist,
                            playlist_id=playlist_id,
                            songs=songs)
