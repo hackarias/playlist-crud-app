@@ -234,7 +234,7 @@ def create_playlist():
                                 user_id=login_session['user_id'])
         session.add(new_playlist)
         session.commit()
-        return redirect(url_for('show_playlist', playlist_id=Playlist.id))
+        return redirect(url_for('show_playlist', playlist_id=new_playlist.id))
     else:
         return render_template('create-playlist.html')
 
@@ -252,6 +252,24 @@ def show_playlists(user_id):
                            playlists=playlists)
 
 
+@app.route('/playlist/<int:playlist_id>/delete/', methods=['GET', 'POST'])
+def delete_playlist(playlist_id):
+    """
+    Deletes a playlist with ID <user_id>.
+    :param playlist_id: ID of the playlist being deleted.
+    :return:
+    """
+    playlist_to_delete = session.query(Playlist).filter_by(id=playlist_id).one()
+    if request.method == 'POST':
+        session.delete(playlist_to_delete)
+        session.commit()
+        return redirect(url_for('home'))
+    else:
+        return render_template('delete_playlist.html',
+                               user_id=playlist_id,
+                               playlist=playlist_to_delete)
+
+
 @app.route('/playlist/<int:playlist_id>/')
 def show_playlist(playlist_id):
     """
@@ -260,9 +278,28 @@ def show_playlist(playlist_id):
     :param playlist_id: ID of the user.
     """
     playlist = session.query(Playlist).filter_by(id=playlist_id).one()
-    songs = session.query(Song).filter_by(playlist_id=playlist_id).all()
-    return render_template('show-playlist.html', playlist=playlist,
+    songs = session.query(Song).filter_by(user_id=playlist.user_id).all()
+    return render_template('show-playlist.html',
+                           playlist=playlist,
+                           playlist_id=playlist_id,
                            songs=songs)
+
+
+@app.route('/playlist/<int:playlist_id>/edit/', methods=['GET', 'POST'])
+def edit_playlist(playlist_id):
+    playlist_to_edit = session.query(Playlist).filter_by(id=playlist_id).one()
+    if request.method == 'POST':
+        if request.form['name']:
+            playlist_to_edit.name = request.form['name']
+        if request.form['description']:
+            playlist_to_edit.description = request.form['description']
+        session.add(playlist_to_edit)
+        session.commit()
+        return redirect(url_for('show_playlist', playlist_id=playlist_id))
+    else:
+        return render_template('edit-playlist.html',
+                               playlist_id=playlist_id,
+                               playlist_to_edit=playlist_to_edit)
 
 
 @app.route('/user/<int:user_id>/edit/', methods=['GET', 'POST'])
