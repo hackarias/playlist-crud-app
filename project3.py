@@ -336,6 +336,43 @@ def delete_user(user_id):
         return render_template('delete-user.html', deleted=user_to_delete)
 
 
+# FIXME: As a user I want to see information about the song such as song title,
+# artist, album and album cover.
+@app.route('/song/<int:song_id>/')
+def show_song(song_id):
+    return "This will show the song info"
+
+
+@app.route('/playlist/<int:playlist_id>/song/create/', methods=['GET', 'POST'])
+def add_song_to_playlist(playlist_id):
+    playlist_id = session.query(Playlist).filter_by(id=playlist_id).one()
+    if request.method == 'POST':
+        song_to_add = Song(song_name=request.form['songname'],
+                           artist=request.form['artistname'],
+                           playlist_id=playlist_id,
+                           user_id=login_session['user_id'])
+        session.add(song_to_add)
+        flash("{0} added to {1}".format(
+            song_to_add.song_name, playlist_id.name))
+        session.commit()
+        return redirect(url_for('show_playlist', playlist_id=playlist_id))
+    else:
+        return render_template('add-song-to-playlist.html')
+
+
+# FIXME: Ad a user I want to be able to move my songs between playlists.
+@app.route('/song/<int:song_id>/edit/')
+def edit_song(song_id):
+    return "This is the page for editing songs."
+
+
+# FIXME: As a user I want to be able to delete songs from my playlist
+@app.route('/playlist/<int:playlist_id>/song/<int:song_id>/delete/',
+           methods=['GET', 'POST'])
+def delete_song_from_playlist(playlist_id, song_id):
+    return "This will be the function that deletes a song from the playlist."
+
+
 if __name__ == '__main__':
     app.secret_key = 'secret_key'
     app.debug = True

@@ -1,0 +1,24 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+  Add song {{ super() }}
+{% endblock %}
+
+{% block head %}
+  {{ super() }}
+{% endblock %}
+
+{% block body %}
+  {{ super() }}
+  <div class="container">
+    <h1>Add song to playlist</h1>
+    <!-- content goes here -->
+    <form action="#" method="post">
+      <input type="text" name="songname" placeholder="Song name">
+      <input type="text" name="artistname" placeholder="Artist name">
+      <input type="submit" name="submitbutton" value="Submit">
+    </form>
+      {# <a href="{{url_for('show_playlist', playlist_id=song_to_add.id)}}">Cancel</a> #}
+  </div>
+
+{% endblock %}

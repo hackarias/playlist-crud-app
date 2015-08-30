@@ -1,0 +1,16 @@
+{% extends 'layout.html' %}
+{% block title %}
+    Show user {{ super() }}
+{% endblock %}
+
+{% block head %}
+    {{ super() }}
+{% endblock %}
+
+{% block body %}
+    {{ super() }}
+
+    <div class="container">
+    <h1>Song for {{song.name}} </h1>
+
+{% endblock %}
