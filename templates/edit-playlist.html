@@ -10,14 +10,13 @@
 {% block body %}
     {{ super() }}
     <div class="container">
+      <h1>Edit {{playlist_to_edit.name}}</h1>
         <form action="" method="post">
-
             <input type="text" name="name" placeholder="{{ playlist_to_edit.name }}">
-            <input type="text" name="description" placeholder="{{
-                    playlist_to_edit.description }}">
+            <input type="text" name="description" placeholder="{{ playlist_to_edit.description }}">
             <input type="submit" value="Edit">
         </form>
-        <a href="{{ url_for('show_playlist', playlist_id=playlist_id) }}">Cancel</a>
+          <a href="{{ url_for('show_playlist', playlist_id=playlist_to_edit.id) }}">Cancel</a><br>
     </div>
 
 {% endblock %}

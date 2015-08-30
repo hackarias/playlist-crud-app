@@ -1,7 +1,5 @@
 {% extends 'layout.html' %}
-
-{% block title %}
-    {{ playlist.name }} {{ super() }}
+{% block title %} {{ playlist.name }} {{ super() }}
 {% endblock %}
 
 {% block head %}
@@ -10,10 +8,10 @@
 
 {% block body %}
     {{ super() }}
-
     <div class="container">
-        <a href="{{ url_for('edit_playlist', playlist_id=playlist_id) }}">Edit</a>
-        <a href="{{ url_for('delete_playlist', playlist_id=playlist.id) }}">Delete</a>
+        <a href="{{ url_for('edit_playlist', user_id=user_id, playlist_id=playlist_id) }}">Edit</a>
+        <a href="{{ url_for('delete_playlist', user_id=user_id, playlist_id=playlist.id) }}">Delete</a>
+        <h1>Playlist page</h1>
         <li>
             <strong> Name: </strong>
             {{ playlist.name }}
@@ -31,7 +29,7 @@
         <li>
             <strong>Songs: </strong>
             {% for song in songs %}
-                song.name
+            {{ song.name }}
             {% endfor %}
 
         </li>

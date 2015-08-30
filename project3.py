@@ -168,6 +168,7 @@ def g_disconnect():
 
 
 @app.route('/')
+@app.route('/user/')
 @app.route('/users/')
 def home():
     """ Renders the home template and passes on a list of all users and their
@@ -185,7 +186,7 @@ def show_user(user_id):
     :return:
     """
     users = session.query(User).filter_by(id=user_id)
-    playlist = session.query(Playlist).order_by(asc(Playlist.name))
+    playlist = session.query(Playlist).filter_by(user_id=user_id)
     return render_template('show-user.html',
                            user_id=user_id,
                            users=users,
@@ -224,10 +225,6 @@ def create_playlist():
     """
     if 'username' not in login_session:
         return redirect('/login')
-    # if login_session['user_id'] != user.id:
-    #     return "<script> function myFunction() {alert('You are not " \
-    #            "authorized to add playlists to this user.')};" \
-    #            " </script><body onload='myFunction()''>"
     if request.method == 'POST':
         new_playlist = Playlist(name=request.form['name'],
                                 description=request.form['description'],
@@ -239,20 +236,24 @@ def create_playlist():
         return render_template('create-playlist.html')
 
 
-@app.route('/playlists/<int:user_id>/')
-def show_playlists(user_id):
+@app.route('/playlist/<int:playlist_id>/', methods=['GET'])
+def show_playlist(playlist_id):
     """
-    Stores all playlist for user with ID user_id.
-    :param user_id: ID of the user.
-    :return:
+    Stores all playlists for user <user_id>.
+    :param playlist_id: ID of the user.
     """
-    user = session.query(User).filter_by(id=user_id).one()
-    playlists = session.query(Playlist).order_by(asc(user_id=user))
-    return render_template('show-playlists.html', user_id=user,
-                           playlists=playlists)
+    playlist = session.query(Playlist).filter_by(id=playlist_id).one()
+    creator = session.query(User).filter_by(id=playlist.user_id).one()
+    songs = session.query(Song).filter_by(user_id=playlist.user_id)
+    return render_template('show-playlist.html',
+                           playlist_id=playlist_id,
+                           playlist=playlist,
+                           creator=creator,
+                           songs=songs)
 
 
-@app.route('/playlist/<int:playlist_id>/delete/', methods=['GET', 'POST'])
+@app.route('/playlist/<int:playlist_id>/delete/',
+           methods=['GET', 'POST'])
 def delete_playlist(playlist_id):
     """
     Deletes a playlist with ID <user_id>.
@@ -264,7 +265,7 @@ def delete_playlist(playlist_id):
         id=playlist_id).one()
     if request.method == 'POST':
         session.delete(playlist_to_delete)
-        flash("Playlist %s was deleted.") % playlist_to_delete.name
+        flash("Playlist was deleted.")
         session.commit()
         return redirect(url_for('show_user', user_id=login_session['user_id']))
     else:
@@ -273,24 +274,8 @@ def delete_playlist(playlist_id):
                                playlist_to_delete=playlist_to_delete)
 
 
-@app.route('/playlist/<int:playlist_id>/')
-def show_playlist(playlist_id):
-    """
-    Stores all playlists for user <user_id>.
-
-    :param playlist_id: ID of the user.
-    """
-    creator = session.query(User).filter_by(id=Playlist.user_id).one()
-    playlist = session.query(Playlist).filter_by(id=playlist_id).one()
-    songs = session.query(Song).filter_by(user_id=playlist.user_id).all()
-    return render_template('show-playlist.html',
-                           creator=creator,
-                           playlist=playlist,
-                           playlist_id=playlist_id,
-                           songs=songs)
-
-
-@app.route('/playlist/<int:playlist_id>/edit/', methods=['GET', 'POST'])
+@app.route('/playlist/<int:playlist_id>/edit/',
+           methods=['GET', 'POST'])
 def edit_playlist(playlist_id):
     playlist_to_edit = session.query(Playlist).filter_by(id=playlist_id).one()
     if request.method == 'POST':
@@ -300,7 +285,8 @@ def edit_playlist(playlist_id):
             playlist_to_edit.description = request.form['description']
         session.add(playlist_to_edit)
         session.commit()
-        return redirect(url_for('show_playlist', playlist_id=playlist_id))
+        return redirect(url_for('show_playlist',
+                                playlist_id=playlist_id))
     else:
         return render_template('edit-playlist.html',
                                playlist_id=playlist_id,
@@ -310,6 +296,12 @@ def edit_playlist(playlist_id):
 @app.route('/user/<int:user_id>/edit/', methods=['GET', 'POST'])
 def edit_user(user_id):
     user_to_edit = session.query(User).filter_by(id=user_id).one()
+    if 'username' not in login_session:
+        return redirect('/login')
+    if login_session['user_id'] != user_id:
+        return "<script> function myFunction() {alert('You are not " \
+               "authorized to edit this user.')};" \
+               " </script><body onload='myFunction()''>"
     if request.method == 'POST':
         if request.form['name']:
             user_to_edit.name = request.form['name']
@@ -331,6 +323,10 @@ def delete_user(user_id):
     user_to_delete = session.query(User).filter_by(id=user_id).one()
     if 'username' not in login_session:
         return redirect('login')
+    if login_session['user_id'] != user_id:
+        return "<script> function myFunction() {alert('You are not " \
+               "authorized to delete this user.')};" \
+               " </script><body onload='myFunction()''>"
     if request.method == 'POST':
         session.delete(user_to_delete)
         session.commit()

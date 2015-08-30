@@ -13,7 +13,8 @@
     <div class="container">
         <form action="" method="post">
             <strong>Do you want to delete {{ playlist.name }}? </strong>
-            <input type="submit" name="deletebutton">
+            <input type="submit" name="deletebutton" value="Delete">
         </form>
+        <a href="{{ url_for('show_playlist', playlist_id=playlist.id) }}">Cancel</a><br>
     </div>
 {% endblock %}
