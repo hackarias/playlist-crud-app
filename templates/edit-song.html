@@ -1,0 +1,25 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+    Edit {{ song_id.name }} {{ super() }}
+{% endblock %}
+
+{% block head %}
+    {{ super() }}
+{% endblock %}
+
+{% block body %}
+    {{ super() }}
+    <div class="container">
+        <form action="#" method="post">
+            <input type="text" placeholder="{{ song_id.songname }}" name="name">
+            <input type="text" placeholder="{{ song_id.artistname }}" name="artist">
+
+            {% for playlist in playlists %}
+                <input type="radio" name="playlist" value="{{ playlist.name }}">
+            {% endfor %}
+            <input type="submit" value="Edit">
+        </form>
+        <a href="{{ url_for('show_song', song_id=song_id) }}">Cancel</a>
+    </div>
+{% endblock %}

@@ -194,6 +194,11 @@ def show_user(user_id):
 
 
 def get_user_id(email):
+    """
+
+    :param email:
+    :return:
+    """
     try:
         user = session.query(User).filter_by(email=email).one()
         return user.id
@@ -202,6 +207,11 @@ def get_user_id(email):
 
 
 def get_user_info(user_id):
+    """
+
+    :param user_id:
+    :return:
+    """
     user = session.query(User).filter_by(id=user_id).one()
     return user
 
@@ -216,6 +226,7 @@ def create_user(login_session):
     return user.id
 
 
+# TODO: If the user isn't signed in, the local permission system is not active
 @app.route('/playlist/create/', methods=['GET', 'POST'])
 def create_playlist():
     """
@@ -333,44 +344,85 @@ def delete_user(user_id):
         flash('User {} was deleted successfully'.format(user_to_delete.name))
         return redirect(url_for('home'))
     else:
-        return render_template('delete-user.html', deleted=user_to_delete)
+        return render_template('delete-user.html', user_id=user_id,
+                               user_to_delete=user_to_delete)
 
 
 # FIXME: As a user I want to see information about the song such as song title,
 # artist, album and album cover.
 @app.route('/song/<int:song_id>/')
 def show_song(song_id):
-    return "This will show the song info"
+    song_id = session.query(Song).filter_by(id=song_id).one()
+    return render_template('show-song.html', song_id=song_id)
 
 
+# FIXME: TypeError: int() argument must be a string or a number, not 'Playlist'
 @app.route('/playlist/<int:playlist_id>/song/create/', methods=['GET', 'POST'])
 def add_song_to_playlist(playlist_id):
+    """
+    Creates a song in the playlist with ID <playlist_id>.
+    :param playlist_id: the ID of the playlist.
+    :return:
+    """
+    user = login_session['user_id']
+    playlists = session.query(Playlist).filter_by(user_id=user)
     playlist_id = session.query(Playlist).filter_by(id=playlist_id).one()
     if request.method == 'POST':
         song_to_add = Song(song_name=request.form['songname'],
                            artist=request.form['artistname'],
-                           playlist_id=playlist_id,
-                           user_id=login_session['user_id'])
+                           playlist_id=request.form['playlist'],
+                           user_id=user)
         session.add(song_to_add)
         flash("{0} added to {1}".format(
             song_to_add.song_name, playlist_id.name))
         session.commit()
         return redirect(url_for('show_playlist', playlist_id=playlist_id))
     else:
-        return render_template('add-song-to-playlist.html')
+        return render_template('add-song-to-playlist.html',
+                               playlists=playlists,
+                               playlist_id=playlist_id)
 
 
-# FIXME: Ad a user I want to be able to move my songs between playlists.
-@app.route('/song/<int:song_id>/edit/')
+@app.route('/song/<int:song_id>/edit/', methods=['GET', 'POST'])
 def edit_song(song_id):
-    return "This is the page for editing songs."
+    """
+    Edits song with the ID <song_id>.
+    :param song_id: the ID of the song.
+    :return:
+    """
+    song_to_edit = session.query(Song).filter_by(id=song_id).one()
+    if request.method == 'POST':
+        if request.method['name']:
+            song_to_edit.song_name = request.form['name']
+        if request.method['artist']:
+            song_to_edit.artist = request.form['artist']
+        if request.method['playlist-id']:
+            song_to_edit.playlist_id = request.form['playlist-id']
+        session.add(song_to_edit)
+        session.commit()
+        return redirect(url_for('show_song', song_id=song_id))
+    else:
+        return render_template('edit-song.html', song_id=song_id)
 
 
-# FIXME: As a user I want to be able to delete songs from my playlist
-@app.route('/playlist/<int:playlist_id>/song/<int:song_id>/delete/',
+@app.route('/playlist/song/<int:song_id>/delete/',
            methods=['GET', 'POST'])
-def delete_song_from_playlist(playlist_id, song_id):
-    return "This will be the function that deletes a song from the playlist."
+def delete_song_from_playlist(song_id):
+    """
+    Deletes a song with ID <song_id>
+    :param song_id: the ID of the song.
+    :return:
+    """
+    song_to_delete = session.query(Song).filter_by(id=song_id).one()
+    if request.method == 'POST':
+        session.delete(song_to_delete)
+        session.commit()
+        return redirect(
+            url_for('show_playlist',
+                    playlist_id=song_to_delete.playlist_id,
+                    song_to_delete=song_to_delete))
+    else:
+        return render_template('delete-song.html')
 
 
 if __name__ == '__main__':

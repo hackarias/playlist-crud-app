@@ -12,13 +12,18 @@
   {{ super() }}
   <div class="container">
     <h1>Add song to playlist</h1>
-    <!-- content goes here -->
+
     <form action="#" method="post">
       <input type="text" name="songname" placeholder="Song name">
       <input type="text" name="artistname" placeholder="Artist name">
       <input type="submit" name="submitbutton" value="Submit">
+        {% for playlist in playlists %}
+            <br>
+            <input type="radio" name="playlist" value="{{ playlist.name
+                    }}">{{ playlist.name }}
+        {% endfor %}
     </form>
-      {# <a href="{{url_for('show_playlist', playlist_id=song_to_add.id)}}">Cancel</a> #}
+       <a href="{{url_for('show_playlist', playlist_id=playlist_id.id) }}">Cancel</a>
   </div>
 
 {% endblock %}
