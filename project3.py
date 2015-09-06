@@ -37,6 +37,34 @@ def login():
     return render_template('login.html', STATE=state)
 
 
+##########################################
+# Local authentication for offline testing
+##########################################
+@app.route('/create_user', methods=['GET', 'POST'])
+def user_create():
+    if request.method == 'POST':
+        new_user = User(name=request.form['name'],
+                        email=request.form['email'])
+        session.add(new_user)
+        flash("{} user created".format(new_user.name))
+        session.commit()
+        return redirect(url_for('show_user', user_id=new_user.id))
+    else:
+        return render_template('create-user.html')
+
+
+@app.route('/login_user', methods=['GET', 'POST'])
+def user_login():
+    users = session.query(User).order_by(asc(User.name))
+    if request.method == 'POST':
+        if request.form['pass'] in request.form['username'].pasword:
+            # User successfully signed in
+            pass
+        pass
+    return render_template('signin.html')
+##########################################
+
+
 @app.route('/gconnect', methods=['POST'])
 def g_connect():
     """ Connects and authorizes user against Google's Google+ API. """
