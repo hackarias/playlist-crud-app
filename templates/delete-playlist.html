@@ -1,7 +1,7 @@
 {% extends 'layout.html' %}
 
 {% block title %}
-    Delete {{ playlist.name }} {{ super() }}
+    Delete {{ playlist_to_delete.name }} {{ super() }}
 {% endblock %}
 
 {% block head %}
@@ -12,9 +12,9 @@
     {{ super() }}
     <div class="container">
         <form action="" method="post">
-            <strong>Do you want to delete {{ playlist.name }}? </strong>
+            <strong>Do you want to delete {{ playlist_to_delete.name }}? </strong>
             <input type="submit" name="deletebutton" value="Delete">
         </form>
-        <a href="{{ url_for('show_playlist', playlist_id=playlist.id) }}">Cancel</a><br>
+        <a href="{{ url_for('show_playlist', playlist_id=playlist_to_delete.id) }}">Cancel</a><br>
     </div>
 {% endblock %}

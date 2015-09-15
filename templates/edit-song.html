@@ -1,7 +1,7 @@
 {% extends 'layout.html' %}
 
 {% block title %}
-    Edit {{ song_id.name }} {{ super() }}
+    Edit {{ song_to_edit.song_name }} {{ super() }}
 {% endblock %}
 
 {% block head %}
@@ -11,13 +11,21 @@
 {% block body %}
     {{ super() }}
     <div class="container">
-        <form action="#" method="post">
-            <input type="text" placeholder="{{ song_id.songname }}" name="name">
-            <input type="text" placeholder="{{ song_id.artistname }}" name="artist">
+    <h1>Edit {{ song_to_edit.song_name }}</h1>
+    <form action="#" method="post">
+            <input type="text" placeholder="{{ song_to_edit.song_name }}" name="name">
+            <input type="text" placeholder="{{ song_to_edit.artist }}" name="artist">
+
+            <h5>Move to another playlist</h5>
+            <select name="playlists" id="change-playlists">
 
             {% for playlist in playlists %}
-                <input type="radio" name="playlist" value="{{ playlist.name }}">
+                <option value="None">None</option>
+                <option value="{{ playlist.name }}">{{ playlist.name }}</option>
             {% endfor %}
+
+            </select>
+        <br>
             <input type="submit" value="Edit">
         </form>
         <a href="{{ url_for('show_song', song_id=song_id) }}">Cancel</a>

@@ -258,6 +258,7 @@ def show_playlist(playlist_id):
                            playlist=playlist, creator=creator, songs=songs)
 
 
+# TODO: Delete songs before deleting playlist
 @app.route('/playlist/<int:playlist_id>/delete/',
            methods=['GET', 'POST'])
 def delete_playlist(playlist_id):
@@ -266,18 +267,21 @@ def delete_playlist(playlist_id):
     :param playlist_id: ID of the playlist being deleted.
     :return:
     """
-    playlist = session.query(Playlist).filter_by(id=playlist_id).one()
     playlist_to_delete = session.query(Playlist).filter_by(
         id=playlist_id).one()
+    songs_to_delete = session.query(Song).filter_by(
+        playlist_id=playlist_to_delete.id).all()
     if request.method == 'POST':
-        session.delete(playlist_to_delete)
-        flash("Playlist was deleted.")
+        for song in songs_to_delete:
+            delete_song_from_playlist(song)
+        # session.delete(playlist_to_delete)
         session.commit()
-        return redirect(url_for('show_user', user_id=login_session['user_id']))
+        flash("Playlist was deleted.")
+        return redirect(url_for('show_user', user_id=playlist_to_delete.id))
     else:
         return render_template('delete-playlist.html',
-                               playlist=playlist,
-                               playlist_to_delete=playlist_to_delete)
+                               playlist_to_delete=playlist_to_delete,
+                               songs_to_delete=songs_to_delete)
 
 
 @app.route('/playlist/<int:playlist_id>/edit/',
@@ -346,8 +350,8 @@ def delete_user(user_id):
 # FIXME: As a user I want to see all info about the song
 @app.route('/song/<int:song_id>/')
 def show_song(song_id):
-    song_id = session.query(Song).filter_by(id=song_id).one()
-    return render_template('show-song.html', song_id=song_id)
+    song = session.query(Song).filter_by(id=song_id).one()
+    return render_template('show-song.html', song=song)
 
 
 @app.route('/playlist/<int:playlist_id>/song/create/', methods=['GET', 'POST'])
@@ -372,6 +376,7 @@ def add_song_to_playlist(playlist_id):
                                playlist_id=playlist_id)
 
 
+# FIXME: 400 BAD REQUEST when submitting
 @app.route('/song/<int:song_id>/edit/', methods=['GET', 'POST'])
 def edit_song(song_id):
     """
@@ -380,18 +385,21 @@ def edit_song(song_id):
     :return:
     """
     song_to_edit = session.query(Song).filter_by(id=song_id).one()
+    playlists = session.query(Playlist).order_by(asc(Playlist.name))
     if request.method == 'POST':
-        if request.method['name']:
+        if request.form['name']:
             song_to_edit.song_name = request.form['name']
-        if request.method['artist']:
+        if request.form['artist']:
             song_to_edit.artist = request.form['artist']
-        if request.method['playlist-id']:
-            song_to_edit.playlist_id = request.form['playlist-id']
+        if request.form['playlist']:
+            song_to_edit.playlist_id = request.form['playlist']
         session.add(song_to_edit)
         session.commit()
-        return redirect(url_for('show_song', song_id=song_id))
+        return redirect(url_for('show_song', song_id=song_to_edit))
     else:
-        return render_template('edit-song.html', song_id=song_id)
+        return render_template('edit-song.html', song_id=song_id,
+                               song_to_edit=song_to_edit,
+                               playlists=playlists)
 
 
 # FIXME: This should also delete all songs from playlist
@@ -407,10 +415,10 @@ def delete_song_from_playlist(song_id):
         session.delete(song_to_delete)
         session.commit()
         return redirect(url_for('show_playlist',
-                                playlist_id=song_to_delete.playlist_id,
-                                song_to_delete=song_to_delete))
+                                playlist_id=song_to_delete.playlist_id))
     else:
-        return render_template('delete-song.html')
+        return render_template('delete-song.html', song_id=song_id,
+                               song_to_delete=song_to_delete)
 
 
 if __name__ == '__main__':

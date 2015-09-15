@@ -30,7 +30,7 @@
         <ul>
             <strong>Songs: </strong>
             {% for song in songs %}
-                <ul>{{ song.song_name }}</ul>
+                <ul><a href="{{ url_for('show_song', song_id=song.id)}}">{{ song.song_name }}</a></ul>
 
             {% endfor %}
 

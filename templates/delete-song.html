@@ -1,7 +1,7 @@
 {% extends 'layout.html' %}
 
 {% block title %}
-    {{ song_to_delete.name }} {{ super() }}
+    {{ song_to_delete.song_name }} {{ super() }}
 {% endblock %}
 
 {% block head %}
@@ -11,7 +11,7 @@
 {% block body %}
     {{ super() }}
     <div class="container">
-        <h2>Are you sure that you want to delete {{ song_to_delete.name }}?</h2>
+        <h2>Are you sure that you want to delete {{ song_to_delete.song_name }}?</h2>
         <form action="#" method="post">
             <input type="submit" value="Delete">
         </form>
