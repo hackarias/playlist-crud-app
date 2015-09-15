@@ -254,9 +254,6 @@ def show_playlist(playlist_id):
     playlist = session.query(Playlist).filter_by(id=playlist_id).one()
     creator = get_user_info(playlist.user_id)
     songs = session.query(Song).filter_by(playlist_id=playlist_id)
-    print "///////////////"
-    print songs
-    print "///////////////"
     return render_template('show-playlist.html', playlist_id=playlist_id,
                            playlist=playlist, creator=creator, songs=songs)
 
