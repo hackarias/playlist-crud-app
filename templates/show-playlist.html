@@ -13,27 +13,28 @@
         <a href="{{ url_for('delete_playlist', user_id=user_id, playlist_id=playlist.id) }}">Delete</a>
         <a href="{{ url_for('add_song_to_playlist', playlist_id=playlist.id) }}">Add song</a>
         <h1>Playlist page</h1>
-        <li>
+        <ul>
             <strong> Name: </strong>
             {{ playlist.name }}
-        </li>
-        <li>
+        </ul>
+        <ul>
             <strong> Description </strong>
             {{ playlist.description }}
-        </li>
+        </ul>
 
-        <li>
+        <ul>
             <strong>Creator: </strong>
             {{ creator.name}}
-        </li>
+        </ul>
 
-        <li>
+        <ul>
             <strong>Songs: </strong>
             {% for song in songs %}
-            {{ song.name }}
+                <ul>{{ song.song_name }}</ul>
+
             {% endfor %}
 
-        </li>
+        </ul>
 
     </div>
 {% endblock %}

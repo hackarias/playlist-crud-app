@@ -37,34 +37,6 @@ def login():
     return render_template('login.html', STATE=state)
 
 
-##########################################
-# Local authentication for offline testing
-##########################################
-@app.route('/create_user', methods=['GET', 'POST'])
-def user_create():
-    if request.method == 'POST':
-        new_user = User(name=request.form['name'],
-                        email=request.form['email'])
-        session.add(new_user)
-        flash("{} user created".format(new_user.name))
-        session.commit()
-        return redirect(url_for('show_user', user_id=new_user.id))
-    else:
-        return render_template('create-user.html')
-
-
-@app.route('/login_user', methods=['GET', 'POST'])
-def user_login():
-    users = session.query(User).order_by(asc(User.name))
-    if request.method == 'POST':
-        if request.form['pass'] in request.form['username'].pasword:
-            # User successfully signed in
-            pass
-        pass
-    return render_template('signin.html')
-##########################################
-
-
 @app.route('/gconnect', methods=['POST'])
 def g_connect():
     """ Connects and authorizes user against Google's Google+ API. """
@@ -215,9 +187,7 @@ def show_user(user_id):
     """
     users = session.query(User).filter_by(id=user_id)
     playlist = session.query(Playlist).filter_by(user_id=user_id)
-    return render_template('show-user.html',
-                           user_id=user_id,
-                           users=users,
+    return render_template('show-user.html', user_id=user_id, users=users,
                            playlists=playlist)
 
 
@@ -282,13 +252,13 @@ def show_playlist(playlist_id):
     :param playlist_id: ID of the user.
     """
     playlist = session.query(Playlist).filter_by(id=playlist_id).one()
-    creator = session.query(User).filter_by(id=playlist.user_id).one()
-    songs = session.query(Song).filter_by(user_id=playlist.user_id)
-    return render_template('show-playlist.html',
-                           playlist_id=playlist_id,
-                           playlist=playlist,
-                           creator=creator,
-                           songs=songs)
+    creator = get_user_info(playlist.user_id)
+    songs = session.query(Song).filter_by(playlist_id=playlist_id)
+    print "///////////////"
+    print songs
+    print "///////////////"
+    return render_template('show-playlist.html', playlist_id=playlist_id,
+                           playlist=playlist, creator=creator, songs=songs)
 
 
 @app.route('/playlist/<int:playlist_id>/delete/',
@@ -376,15 +346,13 @@ def delete_user(user_id):
                                user_to_delete=user_to_delete)
 
 
-# FIXME: As a user I want to see information about the song such as song title,
-# artist, album and album cover.
+# FIXME: As a user I want to see all info about the song
 @app.route('/song/<int:song_id>/')
 def show_song(song_id):
     song_id = session.query(Song).filter_by(id=song_id).one()
     return render_template('show-song.html', song_id=song_id)
 
 
-# FIXME: TypeError: int() argument must be a string or a number, not 'Playlist'
 @app.route('/playlist/<int:playlist_id>/song/create/', methods=['GET', 'POST'])
 def add_song_to_playlist(playlist_id):
     """
@@ -392,22 +360,18 @@ def add_song_to_playlist(playlist_id):
     :param playlist_id: the ID of the playlist.
     :return:
     """
-    user = login_session['user_id']
-    playlists = session.query(Playlist).filter_by(user_id=user)
-    playlist_id = session.query(Playlist).filter_by(id=playlist_id).one()
+    playlist = session.query(Playlist).filter_by(id=playlist_id).one()
     if request.method == 'POST':
         song_to_add = Song(song_name=request.form['songname'],
                            artist=request.form['artistname'],
-                           playlist_id=request.form['playlist'],
-                           user_id=user)
+                           playlist_id=playlist_id,
+                           user_id=playlist.user_id)
         session.add(song_to_add)
-        flash("{0} added to {1}".format(
-            song_to_add.song_name, playlist_id.name))
         session.commit()
+        flash("{0} added to {1}".format(song_to_add.song_name, playlist.name))
         return redirect(url_for('show_playlist', playlist_id=playlist_id))
     else:
         return render_template('add-song-to-playlist.html',
-                               playlists=playlists,
                                playlist_id=playlist_id)
 
 
@@ -433,8 +397,8 @@ def edit_song(song_id):
         return render_template('edit-song.html', song_id=song_id)
 
 
-@app.route('/playlist/song/<int:song_id>/delete/',
-           methods=['GET', 'POST'])
+# FIXME: This should also delete all songs from playlist
+@app.route('/playlist/song/<int:song_id>/delete/', methods=['GET', 'POST'])
 def delete_song_from_playlist(song_id):
     """
     Deletes a song with ID <song_id>
@@ -445,10 +409,9 @@ def delete_song_from_playlist(song_id):
     if request.method == 'POST':
         session.delete(song_to_delete)
         session.commit()
-        return redirect(
-            url_for('show_playlist',
-                    playlist_id=song_to_delete.playlist_id,
-                    song_to_delete=song_to_delete))
+        return redirect(url_for('show_playlist',
+                                playlist_id=song_to_delete.playlist_id,
+                                song_to_delete=song_to_delete))
     else:
         return render_template('delete-song.html')
 

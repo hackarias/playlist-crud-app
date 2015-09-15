@@ -27,9 +27,9 @@
                     <li><strong>Name: </strong>{{ user.name }}</li>
                     <li><strong>Email: </strong>{{ user.email }}</li>
                     <li><strong>ID: </strong>{{ user.id }}</li>
-                    <li> <Strong>Playlists: </Strong>
+                    <li> <strong>Playlists: </strong>
                         {% for playlist in playlists %}
-                                <a href="{{ url_for('show_playlist', playlist_id=playlist.id) }}">{{playlist.name}} </a><br>
+                            <a href="{{ url_for('show_playlist', playlist_id=playlist.id) }}">{{playlist.name}} </a><br>
                         {% endfor %}
 
                     </li>

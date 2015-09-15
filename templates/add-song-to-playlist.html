@@ -17,13 +17,12 @@
       <input type="text" name="songname" placeholder="Song name">
       <input type="text" name="artistname" placeholder="Artist name">
       <input type="submit" name="submitbutton" value="Submit">
-        {% for playlist in playlists %}
-            <br>
-            <input type="radio" name="playlist" value="{{ playlist.name
-                    }}">{{ playlist.name }}
-        {% endfor %}
+{#        {% for playlist in playlists %}#}
+{#            <br>#}
+{#            <input type="radio" name="playlist" value="{{ playlist.name }}">{{ playlist.name }}#}
+{#        {% endfor %}#}
     </form>
-       <a href="{{url_for('show_playlist', playlist_id=playlist_id.id) }}">Cancel</a>
+       <a href="{{url_for('show_playlist', playlist_id=playlist_id) }}">Cancel</a>
   </div>
 
 {% endblock %}
