@@ -12,20 +12,10 @@
     {{ super() }}
     <div class="container">
     <h1>Edit {{ song_to_edit.song_name }}</h1>
-    <form action="#" method="post">
+    <form action="{{ url_for('edit_song', song_id=song_id) }}" method="post">
             <input type="text" placeholder="{{ song_to_edit.song_name }}" name="name">
             <input type="text" placeholder="{{ song_to_edit.artist }}" name="artist">
 
-            <h5>Move to another playlist</h5>
-            <select name="playlists" id="change-playlists">
-
-            {% for playlist in playlists %}
-                <option value="None">None</option>
-                <option value="{{ playlist.name }}">{{ playlist.name }}</option>
-            {% endfor %}
-
-            </select>
-        <br>
             <input type="submit" value="Edit">
         </form>
         <a href="{{ url_for('show_song', song_id=song_id) }}">Cancel</a>

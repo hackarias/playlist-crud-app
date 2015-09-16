@@ -1,17 +1,19 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
 from io import open
-from sqlalchemy import create_engine, asc
-from sqlalchemy.orm import sessionmaker
-from database_setup import User, base, Playlist, Song
-from flask import session as login_session
 import random
 import string
+import json
+
+from flask import Flask, render_template, request, redirect, url_for, flash
+from sqlalchemy import create_engine, asc
+from sqlalchemy.orm import sessionmaker
+from flask import session as login_session
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.client import FlowExchangeError
 import httplib2
-import json
 from flask import make_response
 import requests
+
+from database_setup import User, base, Playlist, Song
 
 app = Flask(__name__)
 
@@ -135,6 +137,8 @@ def g_disconnect():
     """
     Revoke a current user's token and reset their login_session
     Only disconnect a connected user.
+
+    :return: response.
     """
 
     credentials = login_session.get('credentials')
@@ -171,8 +175,9 @@ def g_disconnect():
 @app.route('/user/')
 @app.route('/users/')
 def home():
-    """ Renders the home template and passes on a list of all users and their
-     names
+    """
+    Renders the home template and passes on a list of all users and their names
+    :return: home.html template.
     """
     users = session.query(User).order_by(asc(User.name))
     return render_template('home.html', users=users)
@@ -183,7 +188,7 @@ def show_user(user_id):
     """
     Information about the user.
     :param user_id: ID of the user.
-    :return:
+    :return: show-user.html template for user with ID <user_id>.
     """
     users = session.query(User).filter_by(id=user_id)
     playlist = session.query(Playlist).filter_by(user_id=user_id)
@@ -193,9 +198,9 @@ def show_user(user_id):
 
 def get_user_id(email):
     """
-
-    :param email:
-    :return:
+    Gets the users ID based on email addresss.
+    :param email: the email address of the user to get ID for.
+    :return: None.
     """
     try:
         user = session.query(User).filter_by(email=email).one()
@@ -206,15 +211,20 @@ def get_user_id(email):
 
 def get_user_info(user_id):
     """
-
-    :param user_id:
-    :return:
+    Gets information about the user.
+    :param user_id: the ID of the user.
+    :return: user.
     """
     user = session.query(User).filter_by(id=user_id).one()
     return user
 
 
 def create_user(login_session):
+    """
+    Creates a user from the login_session's parameters.
+    :param login_session: current session.
+    :return: users ID.
+    """
     new_user = User(name=login_session['username'],
                     email=login_session['email'],
                     picture=login_session['picture'])
@@ -228,9 +238,9 @@ def create_user(login_session):
 @app.route('/playlist/create/', methods=['GET', 'POST'])
 def create_playlist():
     """
-    Creates a playlist for the user.
+    Creates a playlist.
 
-    :return: redirect to the users profile
+    :return: redirects to created playlist.
     """
     if 'username' not in login_session:
         return redirect('/login')
@@ -248,8 +258,9 @@ def create_playlist():
 @app.route('/playlist/<int:playlist_id>/', methods=['GET'])
 def show_playlist(playlist_id):
     """
-    Stores all playlists for user <user_id>.
+    Shows the playlist with the ID <playlist_id>.
     :param playlist_id: ID of the user.
+    :return: show-playlist.html.
     """
     playlist = session.query(Playlist).filter_by(id=playlist_id).one()
     creator = get_user_info(playlist.user_id)
@@ -265,16 +276,14 @@ def delete_playlist(playlist_id):
     """
     Deletes a playlist with ID <user_id>.
     :param playlist_id: ID of the playlist being deleted.
-    :return:
+    :return: show_user.
     """
     playlist_to_delete = session.query(Playlist).filter_by(
         id=playlist_id).one()
     songs_to_delete = session.query(Song).filter_by(
         playlist_id=playlist_to_delete.id).all()
     if request.method == 'POST':
-        for song in songs_to_delete:
-            delete_song_from_playlist(song)
-        # session.delete(playlist_to_delete)
+        session.delete(playlist_to_delete)
         session.commit()
         flash("Playlist was deleted.")
         return redirect(url_for('show_user', user_id=playlist_to_delete.id))
@@ -284,9 +293,13 @@ def delete_playlist(playlist_id):
                                songs_to_delete=songs_to_delete)
 
 
-@app.route('/playlist/<int:playlist_id>/edit/',
-           methods=['GET', 'POST'])
+@app.route('/playlist/<int:playlist_id>/edit/', methods=['GET', 'POST'])
 def edit_playlist(playlist_id):
+    """
+    Edits playlist with ID <playlist_id>.
+    :param playlist_id: ID of the playlist.
+    :return: show_playlist.
+    """
     playlist_to_edit = session.query(Playlist).filter_by(id=playlist_id).one()
     if request.method == 'POST':
         if request.form['name']:
@@ -305,6 +318,11 @@ def edit_playlist(playlist_id):
 
 @app.route('/user/<int:user_id>/edit/', methods=['GET', 'POST'])
 def edit_user(user_id):
+    """
+    Edits info for user with ID <user_id>.
+    :param user_id:  ID of the user.
+    :return: show_user.
+    """
     user_to_edit = session.query(User).filter_by(id=user_id).one()
     if 'username' not in login_session:
         return redirect('/login')
@@ -327,29 +345,13 @@ def edit_user(user_id):
                                user_to_edit=user_to_edit)
 
 
-# FIXME: Clicking delete button doesn't trigger a POST request to delete user
-@app.route('/user/<int:user_id>/delete/', methods=['GET', 'POST'])
-def delete_user(user_id):
-    user_to_delete = session.query(User).filter_by(id=user_id).one()
-    if 'username' not in login_session:
-        return redirect('login')
-    if login_session['user_id'] != user_id:
-        return "<script> function myFunction() {alert('You are not " \
-               "authorized to delete this user.')};" \
-               " </script><body onload='myFunction()''>"
-    if request.method == 'POST':
-        session.delete(user_to_delete)
-        session.commit()
-        flash('User {} was deleted successfully'.format(user_to_delete.name))
-        return redirect(url_for('home'))
-    else:
-        return render_template('delete-user.html', user_id=user_id,
-                               user_to_delete=user_to_delete)
-
-
-# FIXME: As a user I want to see all info about the song
-@app.route('/song/<int:song_id>/')
+@app.route('/song/<int:song_id>/', methods=['GET', 'POST'])
 def show_song(song_id):
+    """
+    Shows song with ID <song_id>.
+    :param song_id:  ID of the song.
+    :return: show-song.html.
+    """
     song = session.query(Song).filter_by(id=song_id).one()
     return render_template('show-song.html', song=song)
 
@@ -359,7 +361,7 @@ def add_song_to_playlist(playlist_id):
     """
     Creates a song in the playlist with ID <playlist_id>.
     :param playlist_id: the ID of the playlist.
-    :return:
+    :return: show_playlist.
     """
     playlist = session.query(Playlist).filter_by(id=playlist_id).one()
     if request.method == 'POST':
@@ -376,13 +378,12 @@ def add_song_to_playlist(playlist_id):
                                playlist_id=playlist_id)
 
 
-# FIXME: 400 BAD REQUEST when submitting
 @app.route('/song/<int:song_id>/edit/', methods=['GET', 'POST'])
 def edit_song(song_id):
     """
     Edits song with the ID <song_id>.
     :param song_id: the ID of the song.
-    :return:
+    :return: show_song.
     """
     song_to_edit = session.query(Song).filter_by(id=song_id).one()
     playlists = session.query(Playlist).order_by(asc(Playlist.name))
@@ -391,24 +392,21 @@ def edit_song(song_id):
             song_to_edit.song_name = request.form['name']
         if request.form['artist']:
             song_to_edit.artist = request.form['artist']
-        if request.form['playlist']:
-            song_to_edit.playlist_id = request.form['playlist']
         session.add(song_to_edit)
         session.commit()
-        return redirect(url_for('show_song', song_id=song_to_edit))
+        return redirect(url_for('show_song', song_id=song_id))
     else:
         return render_template('edit-song.html', song_id=song_id,
                                song_to_edit=song_to_edit,
                                playlists=playlists)
 
 
-# FIXME: This should also delete all songs from playlist
 @app.route('/playlist/song/<int:song_id>/delete/', methods=['GET', 'POST'])
-def delete_song_from_playlist(song_id):
+def delete_song(song_id):
     """
     Deletes a song with ID <song_id>
     :param song_id: the ID of the song.
-    :return:
+    :return: show_playlist.
     """
     song_to_delete = session.query(Song).filter_by(id=song_id).one()
     if request.method == 'POST':
