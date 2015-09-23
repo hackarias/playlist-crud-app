@@ -50,8 +50,8 @@ def fb_disconnect():
     facebook_id = login_session['facebook_id']
     # The access token must have me included to successfully logout
     access_token = login_session['access_token']
-    url = 'https://graph.facebook.com/%s/permissions' % (facebook_id,
-                                                         access_token)
+    url = 'https://graph.facebook.com/%s/permissions?access_token=%s' % (
+    facebook_id, access_token)
     h = httplib2.Http()
     result = h.request(url, 'DELETE')[1]
     return "you have been logged out"
@@ -176,7 +176,7 @@ def disconnect():
         return redirect(url_for('home'))
 
 
-@app.route('/fb-connect', methods=['POST'])
+@app.route('/fb-connect', methods=['GET', 'POST'])
 def fb_connect():
     """ Connects and authorizes user against Facebook's API. """
 
@@ -187,12 +187,12 @@ def fb_connect():
     access_token = request.data
     print "access token received %s " % access_token
 
-    app_id = json.loads(open('fb_client_secrets.json', 'r').read())[
+    app_id = json.loads(open('facebook_secrets.json', 'r').read())[
         'web']['app_id']
     app_secret = json.loads(
         open('facebook_secrets.json', 'r').read())['web']['app_secret']
     url = 'https://graph.facebook.com/oauth/access_token?grant_type=' \
-          'fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=' \
+          'fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token='\
           '%s' % (app_id, app_secret, access_token)
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
@@ -202,7 +202,7 @@ def fb_connect():
     # strip expire tag from access token
     token = result.split("&")[0]
 
-    url = 'https://graph.facebook.com/v2.2/me?%s' % token
+    url = 'https://graph.facebook.com/v2.4/me?%s&fields=name,id,email' % token
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
     # print "url sent for API access:%s"% url
