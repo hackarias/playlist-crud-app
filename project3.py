@@ -50,8 +50,8 @@ def fb_disconnect():
     facebook_id = login_session['facebook_id']
     # The access token must have me included to successfully logout
     access_token = login_session['access_token']
-    url = 'https://graph.facebook.com/%s/permissions?access_token=%s' % (
-    facebook_id, access_token)
+    url = 'https://graph.facebook.com/%s/permissions?access_token=%s' % \
+        (facebook_id, access_token)
     h = httplib2.Http()
     result = h.request(url, 'DELETE')[1]
     return "you have been logged out"
@@ -348,8 +348,7 @@ def create_playlist():
 
     :return: redirects to created playlist.
     """
-    if 'username' not in login_session:
-        return redirect('/login')
+    is_permitted()
     if request.method == 'POST':
         new_playlist = Playlist(name=request.form['name'],
                                 description=request.form['description'],
@@ -388,6 +387,7 @@ def delete_playlist(playlist_id):
         id=playlist_id).one()
     songs_to_delete = session.query(Song).filter_by(
         playlist_id=playlist_to_delete.id).all()
+    is_permitted()
     if request.method == 'POST':
         session.delete(playlist_to_delete)
         session.commit()
@@ -407,6 +407,7 @@ def edit_playlist(playlist_id):
     :return: show_playlist.
     """
     playlist_to_edit = session.query(Playlist).filter_by(id=playlist_id).one()
+    is_permitted()
     if request.method == 'POST':
         if request.form['name']:
             playlist_to_edit.name = request.form['name']
@@ -523,6 +524,14 @@ def delete_song(song_id):
     else:
         return render_template('delete-song.html', song_id=song_id,
                                song_to_delete=song_to_delete)
+
+def is_permitted():
+    if 'username' not in login_session:
+        return redirect('/login')
+    if login_session['user_id'] != user_id:
+        return "<script> function myFunction() {alert('You are not " \
+               "authorized to edit this user.')};" \
+               " </script><body onload='myFunction()''>"
 
 
 if __name__ == '__main__':
