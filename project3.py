@@ -51,7 +51,7 @@ def fb_disconnect():
     # The access token must have me included to successfully logout
     access_token = login_session['access_token']
     url = 'https://graph.facebook.com/%s/permissions?access_token=%s' % \
-        (facebook_id, access_token)
+          (facebook_id, access_token)
     h = httplib2.Http()
     result = h.request(url, 'DELETE')[1]
     return "you have been logged out"
@@ -192,7 +192,7 @@ def fb_connect():
     app_secret = json.loads(
         open('facebook_secrets.json', 'r').read())['web']['app_secret']
     url = 'https://graph.facebook.com/oauth/access_token?grant_type=' \
-          'fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token='\
+          'fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=' \
           '%s' % (app_id, app_secret, access_token)
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
@@ -288,17 +288,20 @@ def home():
     return render_template('home.html', users=users)
 
 
-@app.route('/user/<int:user_id>/')
+@app.route('/user/<int:user_id>/', methods=['GET'])
 def show_user(user_id):
     """
     Information about the user.
     :param user_id: ID of the user.
     :return: show-user.html template for user with ID <user_id>.
     """
-    users = session.query(User).filter_by(id=user_id)
-    playlist = session.query(Playlist).filter_by(user_id=user_id)
-    return render_template('show-user.html', user_id=user_id, users=users,
-                           playlists=playlist)
+    users = session.query(User).filter_by(id=user_id).all()
+    playlist = session.query(Playlist).filter_by(user_id=user_id).all()
+    return render_template('show-user.html',
+                           user_id=user_id,
+                           users=users,
+                           playlists=playlist,
+                           login_session=login_session)
 
 
 def get_user_id(email):
@@ -348,7 +351,12 @@ def create_playlist():
 
     :return: redirects to created playlist.
     """
-    is_permitted()
+    if 'username' not in login_session:
+        return redirect('/login')
+    # if login_session['user_id'] != user_id:
+    #     return "<script> function myFunction() {alert('You are not " \
+    #            "authorized to edit this user.')};" \
+    #            " </script><body onload='myFunction()''>"
     if request.method == 'POST':
         new_playlist = Playlist(name=request.form['name'],
                                 description=request.form['description'],
@@ -375,8 +383,7 @@ def show_playlist(playlist_id):
 
 
 # TODO: Delete songs before deleting playlist
-@app.route('/playlist/<int:playlist_id>/delete/',
-           methods=['GET', 'POST'])
+@app.route('/playlist/<int:playlist_id>/delete/', methods=['GET', 'POST'])
 def delete_playlist(playlist_id):
     """
     Deletes a playlist with ID <user_id>.
@@ -387,12 +394,17 @@ def delete_playlist(playlist_id):
         id=playlist_id).one()
     songs_to_delete = session.query(Song).filter_by(
         playlist_id=playlist_to_delete.id).all()
-    is_permitted()
+    if 'username' not in login_session:
+        return redirect('/login')
+    if login_session['user_id'] != playlist_to_delete.user_id:
+        return "<script> function myFunction() {alert('You are not " \
+               "authorized to edit this user.')};" \
+               " </script><body onload='myFunction()''>"
     if request.method == 'POST':
         session.delete(playlist_to_delete)
         session.commit()
         flash("Playlist was deleted.")
-        return redirect(url_for('show_user', user_id=playlist_to_delete.id))
+        return redirect(url_for('show_user', user_id=playlist_to_delete.user_id))
     else:
         return render_template('delete-playlist.html',
                                playlist_to_delete=playlist_to_delete,
@@ -407,7 +419,12 @@ def edit_playlist(playlist_id):
     :return: show_playlist.
     """
     playlist_to_edit = session.query(Playlist).filter_by(id=playlist_id).one()
-    is_permitted()
+    if 'username' not in login_session:
+        return redirect('/login')
+    if login_session['user_id'] != playlist_to_edit.user_id:
+        return "<script> function myFunction() {alert('You are not " \
+               "authorized to edit this user.')};" \
+               " </script><body onload='myFunction()''>"
     if request.method == 'POST':
         if request.form['name']:
             playlist_to_edit.name = request.form['name']
@@ -471,6 +488,12 @@ def add_song_to_playlist(playlist_id):
     :return: show_playlist.
     """
     playlist = session.query(Playlist).filter_by(id=playlist_id).one()
+    if 'username' not in login_session:
+        return redirect('/login')
+    if login_session['user_id'] != playlist.user_id:
+        return "<script> function myFunction() {alert('You are not " \
+               "authorized to edit this user.')};" \
+               " </script><body onload='myFunction()''>"
     if request.method == 'POST':
         song_to_add = Song(song_name=request.form['songname'],
                            artist=request.form['artistname'],
@@ -494,6 +517,12 @@ def edit_song(song_id):
     """
     song_to_edit = session.query(Song).filter_by(id=song_id).one()
     playlists = session.query(Playlist).order_by(asc(Playlist.name))
+    if 'username' not in login_session:
+        return redirect('/login')
+    if login_session['user_id'] != song_id.user_id:
+        return "<script> function myFunction() {alert('You are not " \
+               "authorized to edit this user.')};" \
+               " </script><body onload='myFunction()''>"
     if request.method == 'POST':
         if request.form['name']:
             song_to_edit.song_name = request.form['name']
@@ -516,6 +545,12 @@ def delete_song(song_id):
     :return: show_playlist.
     """
     song_to_delete = session.query(Song).filter_by(id=song_id).one()
+    if 'username' not in login_session:
+        return redirect('/login')
+    if login_session['user_id'] != song_to_delete.user_id:
+        return "<script> function myFunction() {alert('You are not " \
+               "authorized to edit this user.')};" \
+               " </script><body onload='myFunction()''>"
     if request.method == 'POST':
         session.delete(song_to_delete)
         session.commit()
@@ -525,7 +560,15 @@ def delete_song(song_id):
         return render_template('delete-song.html', song_id=song_id,
                                song_to_delete=song_to_delete)
 
-def is_permitted():
+
+def is_permitted(user_id):
+    """
+    If the user is not signed or has a mismatching ID for the functionality
+    attempted to be accessed we display a popup with a warning.
+
+    :param user_id: ID of the user.
+    :return: JavaScript popup.
+    """
     if 'username' not in login_session:
         return redirect('/login')
     if login_session['user_id'] != user_id:
