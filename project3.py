@@ -344,19 +344,21 @@ def create_user(the_login_session):
 
 
 # TODO: If the user isn't signed in, the local permission system is not active
-@app.route('/playlist/create/', methods=['GET', 'POST'])
-def create_playlist():
+@app.route('/user/<int:user_id>/playlist/create/', methods=['GET', 'POST'])
+def create_playlist(user_id):
     """
     Creates a playlist.
 
+    :param user_id: the ID of the user.
     :return: redirects to created playlist.
     """
+    user = session.query(User).filter_by(id=user_id).one()
     if 'username' not in login_session:
         return redirect('/login')
-    # if login_session['user_id'] != user_id:
-    #     return "<script> function myFunction() {alert('You are not " \
-    #            "authorized to edit this user.')};" \
-    #            " </script><body onload='myFunction()''>"
+    if user.id != login_session['user_id']:
+        return "<script> function myFunction() {alert('You are not " \
+               "authorized to edit this user.')};" \
+               " </script><body onload='myFunction()''>"
     if request.method == 'POST':
         new_playlist = Playlist(name=request.form['name'],
                                 description=request.form['description'],
@@ -378,8 +380,12 @@ def show_playlist(playlist_id):
     playlist = session.query(Playlist).filter_by(id=playlist_id).one()
     creator = get_user_info(playlist.user_id)
     songs = session.query(Song).filter_by(playlist_id=playlist_id)
-    return render_template('show-playlist.html', playlist_id=playlist_id,
-                           playlist=playlist, creator=creator, songs=songs)
+    return render_template('show-playlist.html',
+                           playlist_id=playlist_id,
+                           playlist=playlist,
+                           creator=creator,
+                           songs=songs,
+                           login_session=login_session)
 
 
 # TODO: Delete songs before deleting playlist
@@ -469,15 +475,20 @@ def edit_user(user_id):
                                user_to_edit=user_to_edit)
 
 
-@app.route('/song/<int:song_id>/', methods=['GET', 'POST'])
-def show_song(song_id):
+@app.route('/playlist/<int:playlist_id>/song/<int:song_id>/', methods=['GET', 'POST'])
+def show_song(song_id, playlist_id):
     """
     Shows song with ID <song_id>.
-    :param song_id:  ID of the song.
+    :param playlist_id: the ID of the playlist.
+    :param song_id: ID of the song.
     :return: show-song.html.
     """
+    playlist = session.query(Playlist).filter_by(id=playlist_id).one()
     song = session.query(Song).filter_by(id=song_id).one()
-    return render_template('show-song.html', song=song)
+    return render_template('show-song.html',
+                           song_id=song,
+                           playlist_id=playlist,
+                           login_session=login_session)
 
 
 @app.route('/playlist/<int:playlist_id>/song/create/', methods=['GET', 'POST'])
@@ -502,24 +513,28 @@ def add_song_to_playlist(playlist_id):
         session.add(song_to_add)
         session.commit()
         flash("{0} added to {1}".format(song_to_add.song_name, playlist.name))
-        return redirect(url_for('show_playlist', playlist_id=playlist_id))
+        return redirect(url_for('show_playlist',
+                                playlist_id=playlist_id))
     else:
         return render_template('add-song-to-playlist.html',
                                playlist_id=playlist_id)
 
 
-@app.route('/song/<int:song_id>/edit/', methods=['GET', 'POST'])
-def edit_song(song_id):
+@app.route('/playlist/<int:playlist_id>/song/<int:song_id>/edit/',
+           methods=['GET', 'POST'])
+def edit_song(song_id, playlist_id):
     """
     Edits song with the ID <song_id>.
+    :param playlist_id: the ID of the playlist.
     :param song_id: the ID of the song.
     :return: show_song.
     """
+    playlist = session.query(Playlist).filter_by(id=playlist_id).one()
     song_to_edit = session.query(Song).filter_by(id=song_id).one()
     playlists = session.query(Playlist).order_by(asc(Playlist.name))
     if 'username' not in login_session:
         return redirect('/login')
-    if login_session['user_id'] != song_id.user_id:
+    if login_session['user_id'] != song_to_edit.user_id:
         return "<script> function myFunction() {alert('You are not " \
                "authorized to edit this user.')};" \
                " </script><body onload='myFunction()''>"
@@ -532,8 +547,9 @@ def edit_song(song_id):
         session.commit()
         return redirect(url_for('show_song', song_id=song_id))
     else:
-        return render_template('edit-song.html', song_id=song_id,
+        return render_template('edit-song.html', song_id=song_to_edit.id,
                                song_to_edit=song_to_edit,
+                               playlist_id=playlist_id,
                                playlists=playlists)
 
 

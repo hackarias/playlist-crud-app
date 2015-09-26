@@ -1,6 +1,6 @@
 {% extends 'layout.html' %}
 {% block title %}
-    Song {{ song.song_name }} {{ super() }}
+    Song {{ song_id.song_name }} {{ super() }}
 {% endblock %}
 
 {% block head %}
@@ -10,16 +10,20 @@
 {% block body %}
     {{ super() }}
 
-    <a href="{{ url_for('show_playlist', playlist_id=song.playlist_id) }}">Back to playlist</a>
-    <a href="{{ url_for('edit_song', song_id=song.id) }}">Edit</a>
-    <a href="{{ url_for('delete_song', song_id=song.id) }}">Delete</a>
+    {% if login_session['user_id'] == song_id.user_id %}
 
-    <h1>Song: {{ song.song_name }}</h1>
+        <a href="{{ url_for('show_playlist', playlist_id=song_id.playlist_id) }}">Back to playlist</a>
+        <a href="{{ url_for('edit_song', song_id=song_id.id, playlist_id=song_id.playlist_id) }}">Edit</a>
+
+        <a href="{{ url_for('delete_song', song_id=song_id.id) }}">Delete</a>
+    {% endif %}
+
+    <h1>Song: {{ song_id.song_name }}</h1>
     <div class="container">
         <h4>Information about the song</h4>
         <ul>
-            <li>Title: {{ song.song_name }}</li>
-            <li>Artist: {{ song.artist }}</li>
+            <li>Title: {{ song_id.song_name }}</li>
+            <li>Artist: {{ song_id.artist }}</li>
         </ul>
     </div>
 
