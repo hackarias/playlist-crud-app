@@ -12,7 +12,7 @@
     <div class="content">
         {% block body %}
             <div id="signed-in">
-
+                <a href="{{ url_for('home') }}">Home</a>
                 {% if 'username' not in session %}
                     <a href="{{ url_for('login') }}">Click here to log in</a>
                 {% else %}
