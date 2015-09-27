@@ -30,7 +30,7 @@ API endpoints are implemented for playlists and songs.
 
 
 # TODO #
-Add some style and make it pretty.
-Implement deletion of content using post request.
-Add support for images.
-Add more endpoints (XML or RSS).
+* Add some style and make it pretty.
+* Implement deletion of content using post request.
+* Add support for images.
+* Add more endpoints (XML or RSS).
