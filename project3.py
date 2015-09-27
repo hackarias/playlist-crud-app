@@ -18,8 +18,8 @@ from database_setup import User, base, Playlist, Song
 
 app = Flask(__name__)
 
-GOOGLE_CLIENT_ID = json.loads(
-    open('client_secrets.json', 'r').read())['web']['client_id']
+GOOGLE_CLIENT_ID = json.loads(open(
+    'client_secrets.json', 'r').read())['web']['client_id']
 APPLICATION_NAME = "proj3"
 
 # Connect to database
