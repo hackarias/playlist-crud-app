@@ -36,7 +36,6 @@ class Playlist(base):
             'name': self.name,
             'description': self.description,
             'user_id': self.user_id,
-            'user_relationship': self.user_relationship,
         }
 
 
@@ -61,9 +60,7 @@ class Song(base):
             'song_name': self.song_name,
             'artist': self.artist,
             'playlist_id': self.playlist_id,
-            'playlist_relationship': self.playlist_relationship,
             'user_id': self.user_id,
-            'user_relationship': self.user_relationship,
         }
 
 engine = create_engine('sqlite:///test.db')

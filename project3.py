@@ -3,7 +3,8 @@ import random
 import string
 import json
 
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, \
+    jsonify
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
 from flask import session as login_session
@@ -284,7 +285,7 @@ def home():
     Renders the home template and passes on a list of all users and their names
     :return: home.html template.
     """
-    users = session.query(User).order_by(asc(User.name))
+    users = session.query(User).order_by(asc(User.name)).all()
     return render_template('home.html', users=users)
 
 
@@ -388,6 +389,19 @@ def show_playlist(playlist_id):
                            login_session=login_session)
 
 
+@app.route('/playlist/<int:playlist_id>/json')
+def show_playlist_json(playlist_id):
+    """
+    JSON API to view information about the playlist.
+    :param playlist_id: the ID of the playlist.
+    :return:
+    """
+    playlist = session.query(Playlist).filter_by(id=playlist_id).one()
+    songs = session.query(Song).filter_by(playlist_id=playlist_id).all()
+    return jsonify(playlist=playlist.serialize,
+                   songs=[s.serialize for s in songs])
+
+
 # TODO: Delete songs before deleting playlist
 @app.route('/playlist/<int:playlist_id>/delete/', methods=['GET', 'POST'])
 def delete_playlist(playlist_id):
@@ -489,6 +503,18 @@ def show_song(song_id, playlist_id):
                            song_id=song,
                            playlist_id=playlist,
                            login_session=login_session)
+
+
+@app.route('/playlist/<int:playlist_id>/song/<int:song_id>/json')
+def show_song_json(playlist_id, song_id):
+    """
+    JSON API for information about the songs.
+    :param playlist_id: the ID of the playlist.
+    :param song_id: the ID of the playlist.
+    :return:
+    """
+    song = session.query(Song).filter_by(id=song_id).one()
+    return jsonify(song=song.serialize)
 
 
 @app.route('/playlist/<int:playlist_id>/song/create/', methods=['GET', 'POST'])

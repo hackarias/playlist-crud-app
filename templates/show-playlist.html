@@ -16,6 +16,7 @@
             <a href="{{ url_for('add_song_to_playlist', playlist_id=playlist.id) }}">Add song</a>
 
         {% endif %}
+        <a href="{{ url_for('show_playlist_json', playlist_id=playlist_id) }}">JSON API</a>
 
         <h1>Playlist page</h1>
         <ul>
