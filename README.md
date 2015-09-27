@@ -1,4 +1,4 @@
-# A simple CRUD app built with Flask # 
+# A simple CRUD app built with Flask
 Users are able to authenticate using their Facebook and Google+ accounts.
 Users are able to create, update and remove playlists and songs.
 API endpoints are implemented for playlists and songs.
