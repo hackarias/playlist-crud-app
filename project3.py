@@ -192,7 +192,7 @@ def fb_connect():
     app_secret = json.loads(
         open('facebook_secrets.json', 'r').read())['web']['app_secret']
     url = 'https://graph.facebook.com/oauth/access_token?grant_type=' \
-          'fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=' \
+          'fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token='\
           '%s' % (app_id, app_secret, access_token)
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
@@ -347,7 +347,6 @@ def create_user(the_login_session):
     return user.id
 
 
-# TODO: If the user isn't signed in, the local permission system is not active
 @app.route('/user/<int:user_id>/playlist/create/', methods=['GET', 'POST'])
 def create_playlist(user_id):
     """
@@ -415,7 +414,6 @@ def show_playlist_json(playlist_id):
                    songs=[s.serialize for s in songs])
 
 
-# TODO: Delete songs before deleting playlist
 @app.route('/playlist/<int:playlist_id>/delete/', methods=['GET', 'POST'])
 def delete_playlist(playlist_id):
     """
@@ -439,7 +437,8 @@ def delete_playlist(playlist_id):
         session.delete(playlist_to_delete)
         session.commit()
         flash("Playlist was deleted.")
-        return redirect(url_for('show_user', user_id=playlist_to_delete.user_id))
+        return redirect(url_for('show_user',
+                                user_id=playlist_to_delete.user_id))
     else:
         return render_template('delete-playlist.html',
                                playlist_to_delete=playlist_to_delete,
@@ -508,7 +507,8 @@ def edit_user(user_id):
                                user_to_edit=user_to_edit)
 
 
-@app.route('/playlist/<int:playlist_id>/song/<int:song_id>/', methods=['GET', 'POST'])
+@app.route('/playlist/<int:playlist_id>/song/<int:song_id>/',
+           methods=['GET', 'POST'])
 def show_song(song_id, playlist_id):
     """
     Shows song with ID <song_id>.
