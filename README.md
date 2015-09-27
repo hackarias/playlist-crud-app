@@ -27,3 +27,10 @@ API endpoints are implemented for playlists and songs.
 1. Run "pip install -r requirements.txt" to install all dependencies.
 1. Once it's done, run "python project3.py"
 1. Browse to localhost:5000 in your browser and sign in with your Facebook or Google+ account.
+
+
+# TODO #
+Add some style and make it pretty.
+Implement deletion of content using post request.
+Add support for images.
+Add more endpoints (XML or RSS).
