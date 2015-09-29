@@ -481,6 +481,8 @@ def edit_playlist(playlist_id):
                " </script><body onload='myFunction()''>"
 
     if request.method == 'POST':
+        if request.form['picture']:
+            playlist_to_edit.picture = request.form['picture']
         if request.form['name']:
             playlist_to_edit.name = request.form['name']
         if request.form['description']:
@@ -512,6 +514,8 @@ def edit_user(user_id):
                " </script><body onload='myFunction()''>"
 
     if request.method == 'POST':
+        if request.form['picture']:
+            user_to_edit.picture = request.form['picture']
         if request.form['name']:
             user_to_edit.name = request.form['name']
         if request.form['email']:
@@ -621,13 +625,15 @@ def edit_song(song_id, playlist_id):
                " </script><body onload='myFunction()''>"
 
     if request.method == 'POST':
+        if request.form['picture']:
+            song_to_edit.picture = request.form['picture']
         if request.form['name']:
             song_to_edit.song_name = request.form['name']
         if request.form['artist']:
             song_to_edit.artist = request.form['artist']
         session.add(song_to_edit)
         session.commit()
-        return redirect(url_for('show_song', song_id=song_id))
+        return redirect(url_for('show_song', song_id=song_id, playlist_id=playlist_id))
     else:
         return render_template('edit-song.html', song_id=song_to_edit.id,
                                song_to_edit=song_to_edit,

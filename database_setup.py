@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, create_engine, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 
 base = declarative_base()
 
@@ -27,6 +27,9 @@ class Playlist(base):
     description = Column(String(80))
     user_id = Column(Integer, ForeignKey('user.id'))
     user_relationship = relationship(User)
+    picture = Column(String)
+    song_relationship = relationship("Song",
+                                     cascade="all, delete-orphan")
 
     @property
     def serialize(self):
@@ -48,9 +51,9 @@ class Song(base):
     song_name = Column(String(80), nullable=False)
     artist = Column(String, nullable=False)
     playlist_id = Column(Integer, ForeignKey('playlist.id'))
-    playlist_relationship = relationship(Playlist)
     user_id = Column(Integer, ForeignKey('user.id'))
     user_relationship = relationship(User)
+    picture = Column(String)
 
     @property
     def serialize(self):
@@ -62,6 +65,7 @@ class Song(base):
             'playlist_id': self.playlist_id,
             'user_id': self.user_id,
         }
+
 
 engine = create_engine('sqlite:///test.db')
 

@@ -18,11 +18,13 @@
         <a href="{{ url_for('delete_song', song_id=song_id.id) }}">Delete</a>
     {% endif %}
     <a href="{{ url_for('show_song_json', playlist_id=playlist_id.id, song_id=song_id.id) }}">JSON API</a>
+    <a href="{{ url_for('show_song_xml', playlist_id=playlist_id.id, song_id=song_id.id) }}">XML API</a>
 
     <h1>Song: {{ song_id.song_name }}</h1>
     <div class="container">
         <h4>Information about the song</h4>
         <ul>
+            <li>Cover: <img src="{{ song_id.picture }}" height="100" width="100"> </li>
             <li>Title: {{ song_id.song_name }}</li>
             <li>Artist: {{ song_id.artist }}</li>
         </ul>

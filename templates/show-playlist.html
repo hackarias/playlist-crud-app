@@ -17,11 +17,22 @@
 
         {% endif %}
         <a href="{{ url_for('show_playlist_json', playlist_id=playlist_id) }}">JSON API</a>
+        <a href="{{ url_for('show_playlist_xml', playlist_id=playlist_id) }}">XML API</a>
 
         <h1>Playlist page</h1>
         <ul>
+            <strong>Cover: </strong>
+
+                {% if playlist.picture %}
+                    <img src="{{ playlist.picture }}" height="100" width="100">
+                {% else %}
+                    No cover art uploaded yet
+                {% endif %}
+        </ul>
+        <ul>
             <strong> Name: </strong>
             {{ playlist.name }}
+
         </ul>
         <ul>
             <strong> Description </strong>

@@ -12,12 +12,16 @@
     {{ super() }}
     <div class="container">
     <h1>Edit {{ song_to_edit.song_name }}</h1>
-    <form action="{{ url_for('edit_song', song_id=song_id) }}" method="post">
-            <input type="text" placeholder="{{ song_to_edit.song_name }}" name="name">
-            <input type="text" placeholder="{{ song_to_edit.artist }}" name="artist">
+    <form action="#" method="post">
+            <img src="{{ song_to_edit.picture }}" height="100" width="100">
+            <br>
+            <input type="text" value="Paste image url" name="picture">
+            <br>
+            <input type="text" value="{{ song_to_edit.song_name }}" name="name">
+            <input type="text" value="{{ song_to_edit.artist }}" name="artist">
 
             <input type="submit" value="Edit">
         </form>
-        <a href="{{ url_for('show_song', song_id=song_id) }}">Cancel</a>
+        <a href="{{ url_for('show_song', playlist_id=playlist_id, song_id=song_id) }}">Cancel</a>
     </div>
 {% endblock %}
