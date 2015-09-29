@@ -2,6 +2,8 @@ from io import open
 import random
 import string
 import json
+from dicttoxml import dicttoxml
+import urllib
 
 from flask import Flask, render_template, request, redirect, url_for, flash, \
     jsonify
@@ -192,7 +194,7 @@ def fb_connect():
     app_secret = json.loads(
         open('facebook_secrets.json', 'r').read())['web']['app_secret']
     url = 'https://graph.facebook.com/oauth/access_token?grant_type=' \
-          'fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token='\
+          'fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=' \
           '%s' % (app_id, app_secret, access_token)
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
@@ -397,7 +399,7 @@ def show_playlist(playlist_id):
                            login_session=login_session)
 
 
-@app.route('/playlist/<int:playlist_id>/json')
+@app.route('/playlist/<int:playlist_id>/json/')
 def show_playlist_json(playlist_id):
     """
     JSON API to view information about the playlist.
@@ -412,6 +414,23 @@ def show_playlist_json(playlist_id):
 
     return jsonify(playlist=playlist.serialize,
                    songs=[s.serialize for s in songs])
+
+
+@app.route('/playlist/<int:playlist_id>/xml/')
+def show_playlist_xml(playlist_id):
+    """
+    XML API to view information about the playlist.
+    :param playlist_id: the ID of the playlist.
+    :return:
+    """
+    playlist = session.query(Playlist).filter_by(id=playlist_id).one()
+    songs = session.query(Song).filter_by(playlist_id=playlist.id).all()
+    response = make_response(dicttoxml({
+        'Playlist': [playlist.serialize],
+        'Song': [s.serialize for s in songs]
+    }), 200)
+    response.headers['Content-Type'] = 'application/xml'
+    return response
 
 
 @app.route('/playlist/<int:playlist_id>/delete/', methods=['GET', 'POST'])
@@ -534,6 +553,20 @@ def show_song_json(playlist_id, song_id):
     """
     song = session.query(Song).filter_by(id=song_id).one()
     return jsonify(song=song.serialize)
+
+
+@app.route('/playlist/<int:playlist_id>/song/<int:song_id>/xml')
+def show_song_xml(playlist_id, song_id):
+    """
+    XML API for information about the songs.
+    :param playlist_id: the ID of the playlist.
+    :param song_id: the ID of the playlist.
+    :return:
+    """
+    song = session.query(Song).filter_by(id=song_id).one()
+    response = make_response(dicttoxml([song.serialize]))
+    response.headers['Content-Type'] = 'application/xml'
+    return response
 
 
 @app.route('/playlist/<int:playlist_id>/song/create/', methods=['GET', 'POST'])
