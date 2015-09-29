@@ -33,7 +33,7 @@ db_session = sessionmaker(bind=engine)
 session = db_session()
 
 def login_required(func):
-    """Checks whether user is logged in or raises error 401."""
+    """Checks whether user is logged in or redirects to login page """
     @wraps(func)
     def wrapper(*args, **kwargs):
         if 'username' not in login_session:
