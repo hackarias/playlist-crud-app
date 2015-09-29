@@ -297,12 +297,11 @@ def show_user(user_id):
     :param user_id: ID of the user.
     :return: show-user.html template for user with ID <user_id>.
     """
-    users = session.query(User).filter_by(id=user_id).all()
-    playlist = session.query(Playlist).filter_by(user_id=user_id).all()
-
     if 'username' not in login_session:
         return redirect('/login')
 
+    users = session.query(User).filter_by(id=user_id).all()
+    playlist = session.query(Playlist).filter_by(user_id=user_id).all()
     return render_template('show-user.html',
                            user_id=user_id,
                            users=users,
@@ -357,10 +356,11 @@ def create_playlist(user_id):
     :param user_id: the ID of the user.
     :return: redirects to created playlist.
     """
-    user = session.query(User).filter_by(id=user_id).one()
-
     if 'username' not in login_session:
         return redirect('/login')
+
+    user = session.query(User).filter_by(id=user_id).one()
+
     if user.id != login_session['user_id']:
         return "<script> function myFunction() {alert('You are not " \
                "authorized to edit this user.')};" \
@@ -384,13 +384,12 @@ def show_playlist(playlist_id):
     :param playlist_id: ID of the user.
     :return: show-playlist.html.
     """
-    playlist = session.query(Playlist).filter_by(id=playlist_id).one()
-    creator = get_user_info(playlist.user_id)
-    songs = session.query(Song).filter_by(playlist_id=playlist_id)
-
     if 'username' not in login_session:
         return redirect('/login')
 
+    playlist = session.query(Playlist).filter_by(id=playlist_id).one()
+    creator = get_user_info(playlist.user_id)
+    songs = session.query(Song).filter_by(playlist_id=playlist_id)
     return render_template('show-playlist.html',
                            playlist_id=playlist_id,
                            playlist=playlist,
@@ -406,12 +405,11 @@ def show_playlist_json(playlist_id):
     :param playlist_id: the ID of the playlist.
     :return:
     """
-    playlist = session.query(Playlist).filter_by(id=playlist_id).one()
-    songs = session.query(Song).filter_by(playlist_id=playlist_id).all()
-
     if 'username' not in login_session:
         return redirect('/login')
 
+    playlist = session.query(Playlist).filter_by(id=playlist_id).one()
+    songs = session.query(Song).filter_by(playlist_id=playlist_id).all()
     return jsonify(playlist=playlist.serialize,
                    songs=[s.serialize for s in songs])
 
@@ -440,13 +438,14 @@ def delete_playlist(playlist_id):
     :param playlist_id: ID of the playlist being deleted.
     :return: show_user.
     """
+    if 'username' not in login_session:
+        return redirect('/login')
+
     playlist_to_delete = session.query(Playlist).filter_by(
         id=playlist_id).one()
     songs_to_delete = session.query(Song).filter_by(
         playlist_id=playlist_to_delete.id).all()
 
-    if 'username' not in login_session:
-        return redirect('/login')
     if login_session['user_id'] != playlist_to_delete.user_id:
         return "<script> function myFunction() {alert('You are not " \
                "authorized to edit this user.')};" \
@@ -471,10 +470,11 @@ def edit_playlist(playlist_id):
     :param playlist_id: ID of the playlist.
     :return: show_playlist.
     """
-    playlist_to_edit = session.query(Playlist).filter_by(id=playlist_id).one()
-
     if 'username' not in login_session:
         return redirect('/login')
+
+    playlist_to_edit = session.query(Playlist).filter_by(id=playlist_id).one()
+
     if login_session['user_id'] != playlist_to_edit.user_id:
         return "<script> function myFunction() {alert('You are not " \
                "authorized to edit this user.')};" \
@@ -504,10 +504,11 @@ def edit_user(user_id):
     :param user_id:  ID of the user.
     :return: show_user.
     """
-    user_to_edit = session.query(User).filter_by(id=user_id).one()
-
     if 'username' not in login_session:
         return redirect('/login')
+
+    user_to_edit = session.query(User).filter_by(id=user_id).one()
+
     if login_session['user_id'] != user_id:
         return "<script> function myFunction() {alert('You are not " \
                "authorized to edit this user.')};" \
@@ -580,10 +581,11 @@ def add_song_to_playlist(playlist_id):
     :param playlist_id: the ID of the playlist.
     :return: show_playlist.
     """
-    playlist = session.query(Playlist).filter_by(id=playlist_id).one()
-
     if 'username' not in login_session:
         return redirect('/login')
+
+    playlist = session.query(Playlist).filter_by(id=playlist_id).one()
+
     if login_session['user_id'] != playlist.user_id:
         return "<script> function myFunction() {alert('You are not " \
                "authorized to edit this user.')};" \
@@ -613,12 +615,13 @@ def edit_song(song_id, playlist_id):
     :param song_id: the ID of the song.
     :return: show_song.
     """
+    if 'username' not in login_session:
+        return redirect('/login')
+
     playlist = session.query(Playlist).filter_by(id=playlist_id).one()
     song_to_edit = session.query(Song).filter_by(id=song_id).one()
     playlists = session.query(Playlist).order_by(asc(Playlist.name))
 
-    if 'username' not in login_session:
-        return redirect('/login')
     if login_session['user_id'] != song_to_edit.user_id:
         return "<script> function myFunction() {alert('You are not " \
                "authorized to edit this user.')};" \
@@ -648,10 +651,11 @@ def delete_song(song_id):
     :param song_id: the ID of the song.
     :return: show_playlist.
     """
-    song_to_delete = session.query(Song).filter_by(id=song_id).one()
-
     if 'username' not in login_session:
         return redirect('/login')
+
+    song_to_delete = session.query(Song).filter_by(id=song_id).one()
+
     if login_session['user_id'] != song_to_delete.user_id:
         return "<script> function myFunction() {alert('You are not " \
                "authorized to edit this user.')};" \
