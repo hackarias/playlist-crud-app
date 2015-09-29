@@ -1,3 +1,4 @@
+from functools import wraps
 from io import open
 import random
 import string
@@ -30,6 +31,15 @@ base.metadata.bind = engine
 
 db_session = sessionmaker(bind=engine)
 session = db_session()
+
+def login_required(func):
+    """Checks whether user is logged in or raises error 401."""
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        if 'username' not in login_session:
+            return redirect('/login')
+        return func(*args, **kwargs)
+    return wrapper
 
 
 @app.route('/login')
@@ -291,15 +301,13 @@ def home():
 
 
 @app.route('/user/<int:user_id>/', methods=['GET'])
+@login_required
 def show_user(user_id):
     """
     Information about the user.
     :param user_id: ID of the user.
     :return: show-user.html template for user with ID <user_id>.
     """
-    if 'username' not in login_session:
-        return redirect('/login')
-
     users = session.query(User).filter_by(id=user_id).all()
     playlist = session.query(Playlist).filter_by(user_id=user_id).all()
     return render_template('show-user.html',
@@ -349,6 +357,7 @@ def create_user(the_login_session):
 
 
 @app.route('/user/<int:user_id>/playlist/create/', methods=['GET', 'POST'])
+@login_required
 def create_playlist(user_id):
     """
     Creates a playlist.
@@ -356,9 +365,6 @@ def create_playlist(user_id):
     :param user_id: the ID of the user.
     :return: redirects to created playlist.
     """
-    if 'username' not in login_session:
-        return redirect('/login')
-
     user = session.query(User).filter_by(id=user_id).one()
 
     if user.id != login_session['user_id']:
@@ -378,15 +384,13 @@ def create_playlist(user_id):
 
 
 @app.route('/playlist/<int:playlist_id>/', methods=['GET'])
+@login_required
 def show_playlist(playlist_id):
     """
     Shows the playlist with the ID <playlist_id>.
     :param playlist_id: ID of the user.
     :return: show-playlist.html.
     """
-    if 'username' not in login_session:
-        return redirect('/login')
-
     playlist = session.query(Playlist).filter_by(id=playlist_id).one()
     creator = get_user_info(playlist.user_id)
     songs = session.query(Song).filter_by(playlist_id=playlist_id)
@@ -399,15 +403,13 @@ def show_playlist(playlist_id):
 
 
 @app.route('/playlist/<int:playlist_id>/json/')
+@login_required
 def show_playlist_json(playlist_id):
     """
     JSON API to view information about the playlist.
     :param playlist_id: the ID of the playlist.
     :return:
     """
-    if 'username' not in login_session:
-        return redirect('/login')
-
     playlist = session.query(Playlist).filter_by(id=playlist_id).one()
     songs = session.query(Song).filter_by(playlist_id=playlist_id).all()
     return jsonify(playlist=playlist.serialize,
@@ -432,15 +434,13 @@ def show_playlist_xml(playlist_id):
 
 
 @app.route('/playlist/<int:playlist_id>/delete/', methods=['GET', 'POST'])
+@login_required
 def delete_playlist(playlist_id):
     """
     Deletes a playlist with ID <user_id>.
     :param playlist_id: ID of the playlist being deleted.
     :return: show_user.
     """
-    if 'username' not in login_session:
-        return redirect('/login')
-
     playlist_to_delete = session.query(Playlist).filter_by(
         id=playlist_id).one()
     songs_to_delete = session.query(Song).filter_by(
@@ -464,15 +464,13 @@ def delete_playlist(playlist_id):
 
 
 @app.route('/playlist/<int:playlist_id>/edit/', methods=['GET', 'POST'])
+@login_required
 def edit_playlist(playlist_id):
     """
     Edits playlist with ID <playlist_id>.
     :param playlist_id: ID of the playlist.
     :return: show_playlist.
     """
-    if 'username' not in login_session:
-        return redirect('/login')
-
     playlist_to_edit = session.query(Playlist).filter_by(id=playlist_id).one()
 
     if login_session['user_id'] != playlist_to_edit.user_id:
@@ -498,15 +496,13 @@ def edit_playlist(playlist_id):
 
 
 @app.route('/user/<int:user_id>/edit/', methods=['GET', 'POST'])
+@login_required
 def edit_user(user_id):
     """
     Edits info for user with ID <user_id>.
     :param user_id:  ID of the user.
     :return: show_user.
     """
-    if 'username' not in login_session:
-        return redirect('/login')
-
     user_to_edit = session.query(User).filter_by(id=user_id).one()
 
     if login_session['user_id'] != user_id:
@@ -575,15 +571,13 @@ def show_song_xml(playlist_id, song_id):
 
 
 @app.route('/playlist/<int:playlist_id>/song/create/', methods=['GET', 'POST'])
+@login_required
 def add_song_to_playlist(playlist_id):
     """
     Creates a song in the playlist with ID <playlist_id>.
     :param playlist_id: the ID of the playlist.
     :return: show_playlist.
     """
-    if 'username' not in login_session:
-        return redirect('/login')
-
     playlist = session.query(Playlist).filter_by(id=playlist_id).one()
 
     if login_session['user_id'] != playlist.user_id:
@@ -608,6 +602,7 @@ def add_song_to_playlist(playlist_id):
 
 @app.route('/playlist/<int:playlist_id>/song/<int:song_id>/edit/',
            methods=['GET', 'POST'])
+@login_required
 def edit_song(song_id, playlist_id):
     """
     Edits song with the ID <song_id>.
@@ -615,9 +610,6 @@ def edit_song(song_id, playlist_id):
     :param song_id: the ID of the song.
     :return: show_song.
     """
-    if 'username' not in login_session:
-        return redirect('/login')
-
     playlist = session.query(Playlist).filter_by(id=playlist_id).one()
     song_to_edit = session.query(Song).filter_by(id=song_id).one()
     playlists = session.query(Playlist).order_by(asc(Playlist.name))
@@ -645,15 +637,13 @@ def edit_song(song_id, playlist_id):
 
 
 @app.route('/playlist/song/<int:song_id>/delete/', methods=['GET', 'POST'])
+@login_required
 def delete_song(song_id):
     """
     Deletes a song with ID <song_id>
     :param song_id: the ID of the song.
     :return: show_playlist.
     """
-    if 'username' not in login_session:
-        return redirect('/login')
-
     song_to_delete = session.query(Song).filter_by(id=song_id).one()
 
     if login_session['user_id'] != song_to_delete.user_id:
